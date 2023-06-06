@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 import argparse
 import os
+import warnings
 
 ENABLE_WEEKDAYS = False
 ENABLE_SUBDAY_DATES = False
@@ -17,6 +18,19 @@ def note(args):
         md_prefill = construct_md_prefill(args)
         editor_args = construct_vi_args(md_prefill)
     edit_file(editor, editor_args or '', path or '')
+
+
+def make_wide_formatter(formatter, w=120, h=36):
+    """Return a wider HelpFormatter, if possible."""
+    try:
+        # https://stackoverflow.com/a/5464440
+        # beware: "Only the name of this class is considered a public API."
+        kwargs = {'width': w, 'max_help_position': h}
+        formatter(None, **kwargs)
+        return lambda prog: formatter(prog, **kwargs)
+    except TypeError:
+        warnings.warn("argparse help formatter failed, falling back.")
+        return formatter
 
 
 def edit_file(editor, editor_args, filename):
@@ -121,8 +135,10 @@ def prepare_date_choices():
 
 
 def create_parser():
+    formatter = make_wide_formatter(argparse.ArgumentDefaultsHelpFormatter)
     parser = argparse.ArgumentParser(prog='note',
                                      allow_abbrev=True,
+                                     formatter_class=formatter,
                                      description='take notes in markdown')
 
     parser.add_argument('-d', '--date',
