@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 from datetime import datetime, timedelta
-from enum import Enum
 import argparse
 import os
+
+ENABLE_WEEKDAYS = False
+ENABLE_SUBDAY_DATES = False
+ENABLE_RELATIVE_DATES = True
 
 
 def note(args):
@@ -20,10 +23,6 @@ def edit_file(editor, editor_args, filename):
     os.system(f"{editor} {editor_args} {filename}")
 
 
-def is_vi_editor(editor):
-    return editor in ['vi', 'vim', 'nvim']
-
-
 def fetch_directory(date_prefix):
     slot = 'DAILY' if date_prefix else 'NOTEBOOK'
     return os.getenv(slot)
@@ -33,13 +32,17 @@ def fetch_editor():
     return os.getenv('EDITOR')
 
 
+def is_vi_editor(editor):
+    return editor in ['vi', 'vim', 'nvim']
+
+
 def construct_vi_args(prefill):
     vi_cmd = f':exe "normal i{prefill}\\<Esc>"'
     return f"-c '{vi_cmd}'"
 
 
 def construct_md_prefill(args):
-    title = ' '.join(args.title or args.positional_args)
+    title = ' '.join(args.TITLE or [])
     return f'# {title}\n\n' if title else ''
 
 
@@ -72,13 +75,21 @@ def compose_path(directory, filename_components, format='md'):
 
 def extract_date_format_string(args):
     date = args.date[0] if args.date else None
-    if date == DateSpec.now:
+    if date in ['second', 'now']:
         return '%Y-%m-%dT%H:%M:%S'
-    elif date in [DateSpec.yesterday, DateSpec.today, DateSpec.tomorrow]:
+    if date == 'minute':
+        return '%Y-%m-%dT%H:%M'
+    if date == 'hour':
+        return '%Y-%m-%dT%H'
+    elif date in ['day', 'yesterday', 'today', 'tomorrow']:
         return '%Y-%m-%d'
-    elif date == DateSpec.month:
+    elif date == 'week':
+        return '%Y-W%V'
+    elif date == 'weekday':
+        return '%Y-W%V-%w'  # %V is iso, %U from sunday, %W from monday
+    elif date == 'month':
         return '%Y-%m'
-    elif date == DateSpec.year:
+    elif date == 'year':
         return '%Y'
     else:
         return None
@@ -87,49 +98,49 @@ def extract_date_format_string(args):
 # prepare dated arguments
 def extract_date_offset(args):
     date = args.date[0] if args.date else None
-    if date == DateSpec.yesterday:
+    if date == 'yesterday':
         return -1
-    elif date == DateSpec.tomorrow:
+    elif date == 'tomorrow':
         return +1
     else:
         return None
 
 
-class DateSpec(str, Enum):
-    now = 'now'
-    day = 'day'
-    yesterday = 'yesterday'
-    today = 'today'
-    tomorrow = 'tomorrow'
-    week = 'week'
-    month = 'month'
-    year = 'year'
+def prepare_date_choices():
+    date_choices = ['now', 'second', 'minute', 'hour', 'day',
+                    'weekday', 'week', 'month', 'year',
+                    'yesterday', 'today', 'tomorrow']
+    unwanted = []
+    if not ENABLE_SUBDAY_DATES:
+        unwanted.extend(['second', 'minute', 'hour'])
+    if not ENABLE_WEEKDAYS:
+        unwanted.extend(['week', 'weekday'])
+    if not ENABLE_RELATIVE_DATES:
+        unwanted.extend(['now', 'yesterday', 'today', 'tomorrow'])
+    return [choice for choice in date_choices if choice not in unwanted]
 
 
 def create_parser():
     parser = argparse.ArgumentParser(prog='note',
-                                     description='helps you' +
-                                     ' take notes in markdown')
-    parser.add_argument('-n', '--named',
-                        dest='name',
-                        metavar='FILENAME',
-                        nargs=1,
-                        help='set filename')
-    parser.add_argument('-t', '--title',
-                        nargs=1,
-                        help='set the title')
-    parser.add_argument('-d', '--dated',
+                                     allow_abbrev=True,
+                                     description='take notes in markdown')
+
+    parser.add_argument('-d', '--date',
                         dest='date',
-                        metavar='DATESPEC',
-                        type=DateSpec,
+                        choices=prepare_date_choices(),
+                        metavar='DATE',
                         nargs=1,
-                        help='select from the following date-specs: \n' +
-                             '[ now | yesterday | [to]day ' +
-                             '| tomorrow | week | month | year ]')
-    parser.add_argument('positional_args',
+                        help='provide a date')
+
+    parser.add_argument('-n', '--name',
+                        dest='name',
+                        metavar='NAME',
+                        nargs=1,
+                        help='provide a name')
+
+    parser.add_argument('TITLE',
                         nargs=argparse.REMAINDER,
-                        help='positional arguments are taken as default '
-                        + 'for title and filename')
+                        help='set your note\'s title')
 
     return parser
 
