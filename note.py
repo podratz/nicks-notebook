@@ -59,13 +59,21 @@ def try_to_construct_editor_parameters(editor, args):
 
 
 def construct_vi_parameters(prefill):
-    vi_cmd = f':exe "normal i{prefill}\\<Esc>"'
+    vi_cmd = f':set filetype=markdown | :execute "$normal A{prefill}"'
     return f"-c '{vi_cmd}'"
 
 
 def construct_md_prefill(args):
+    """ Fills a markdown template from hierarchical arguments """
+    def format_heading(level, title):
+        return ('#' * level) + ' ' + title.strip(' ')
     title = ' '.join(args.TITLE or [])
-    return f'# {title}\n\n' if title else ''
+    headings = title.split('/')
+    prefixed_headings = map(
+            lambda pair: format_heading(pair[0], pair[1]),
+            enumerate(headings, start=1))
+    contents = '\n\n'.join(prefixed_headings or [])
+    return f'{contents}\n' if title else ''
 
 
 def try_to_construct_filepath(args):
