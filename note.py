@@ -138,14 +138,6 @@ def extract_date_offset(args):
         return None
 
 
-def decode_offset_string(args):
-    # default_unit = 'days'  # if no unit is provided
-    # quantity = re.findall(r'^\d+', args.offset)
-    # unit = re.findall(r'[smhw(kw)y]$', args.offset) ?? default_unit
-    # return (quantity, unit)
-    pass
-
-
 def prepare_date_choices():
     date_choices = ['now', 'second', 'minute', 'hour', 'day',
                     'weekday', 'week', 'month', 'year',
@@ -169,9 +161,6 @@ def create_parser():
                         metavar='DATE',
                         choices=prepare_date_choices(),
                         help='provide a date')
-
-    parser.add_argument('-o', '--offset',
-                        help='provide a date offset')
 
     parser.add_argument('-n', '--name',
                         help='provide a name')
