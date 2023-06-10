@@ -59,7 +59,7 @@ def try_to_construct_editor_parameters(editor, args):
 
 
 def construct_vi_parameters(prefill):
-    vi_cmd = f':set filetype=markdown | :execute "$normal A{prefill}"'
+    vi_cmd = f':set filetype=markdown | set path+=** | :execute "$normal A{prefill}"'
     return f"-c '{vi_cmd}'"
 
 
