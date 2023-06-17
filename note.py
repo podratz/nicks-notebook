@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 import argparse
 import os
+import sys
 import warnings
 # import re
 
@@ -49,10 +50,10 @@ def fetch_editor():
 
 
 def try_to_construct_editor_parameters(editor, args):
+    content = construct_md_prefill(args)
     match editor:
         case 'vi' | 'vim' | 'nvim':
-            md_prefill = construct_md_prefill(args)
-            return construct_vi_parameters(md_prefill)
+            return construct_vi_parameters(content)
         case _:
             # other editors are not yet supported -> edit file without prefill
             return None
@@ -63,8 +64,7 @@ def construct_vi_parameters(prefill):
     return f"-c '{vi_cmd}'"
 
 
-def construct_md_prefill(args):
-    """ Fills a markdown template from hierarchical arguments """
+def construct_header(args):
     def format_heading(level, title):
         return ('#' * level) + ' ' + title.strip(' ')
     title = ' '.join(args.TITLE or [])
@@ -72,8 +72,19 @@ def construct_md_prefill(args):
     prefixed_headings = map(
             lambda pair: format_heading(pair[0], pair[1]),
             enumerate(headings, start=1))
-    contents = '\n\n'.join(prefixed_headings or [])
-    return f'{contents}\n' if title else ''
+    return '\n\n'.join(prefixed_headings or [])
+
+
+def fetch_body(args):
+    """gets the body from std-in"""
+    return ''.join(args.file.readlines())
+    
+
+def construct_md_prefill(args):
+    """ Fills a markdown template from hierarchical arguments """
+    header = construct_header(args)
+    body = fetch_body(args)
+    return '\n\n'.join([header, body])
 
 
 def try_to_construct_filepath(args):
@@ -164,6 +175,12 @@ def create_parser():
 
     parser.add_argument('-n', '--name',
                         help='provide a name')
+
+    parser.add_argument('-f', '--file', 
+                        nargs='?',
+                        type=argparse.FileType(),
+                        default=sys.stdin,
+                        help='provide input')
 
     parser.add_argument('TITLE',
                         nargs=argparse.REMAINDER,
