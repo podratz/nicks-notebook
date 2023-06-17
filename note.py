@@ -11,35 +11,20 @@ ENABLE_SUBDAY_DATES = False
 ENABLE_RELATIVE_DATES = True
 
 
-def note(args):
+def note(editor, parameters, filepath):
     """ Create a note """
+    os.system(f"{editor} {parameters} {filepath}")
+
+
+def main():
+    parser = _parser()
+    args = parser.parse_args()
 
     editor = fetch_editor() or 'vi'
     parameters = try_to_construct_editor_parameters(editor, args) or ''
     filepath = try_to_construct_filepath(args) or ''
-    edit_file(editor, parameters, filepath)
 
-
-def make_wide_formatter(formatter, w=120, h=36):
-    """Return a wider HelpFormatter, if possible."""
-    try:
-        # https://stackoverflow.com/a/5464440
-        # beware: "Only the name of this class is considered a public API."
-        kwargs = {'width': w, 'max_help_position': h}
-        formatter(None, **kwargs)
-        return lambda prog: formatter(prog, **kwargs)
-    except TypeError:
-        warnings.warn("argparse help formatter failed, falling back.")
-        return formatter
-
-
-def edit_file(editor, parameters, filepath):
-    os.system(f"{editor} {parameters} {filepath}")
-
-
-def fetch_directory(date_prefix):
-    var_name = 'DAILY' if date_prefix else 'NOTES'
-    return os.getenv(var_name)
+    note(editor, parameters, filepath)
 
 
 def fetch_editor():
@@ -96,6 +81,11 @@ def construct_md_prefill(args):
     return '\n\n'.join(components)
 
 
+def fetch_directory(date_prefix):
+    var_name = 'DAILY' if date_prefix else 'NOTES'
+    return os.getenv(var_name)
+
+
 def try_to_construct_filepath(args):
     date_prefix = construct_date_string(args)
     name_appendix = args.name
@@ -114,15 +104,6 @@ def construct_date_string(args):
 
     if date_format_string := extract_date_format_string(args):
         return date.strftime(date_format_string)
-
-
-def compose_path(directory, filename_components, format='md'):
-    if components := list(filter(None, filename_components)):
-        filename = f'{"_".join(components)}.{format}'
-        return os.path.join(directory, filename)
-    else:
-        raise ValueError('Insufficient argument list: '
-                         + 'components need to be provided')
 
 
 def extract_date_format_string(args):
@@ -158,21 +139,16 @@ def extract_date_offset(args):
         return None
 
 
-def prepare_date_choices():
-    date_choices = ['now', 'second', 'minute', 'hour', 'day',
-                    'weekday', 'week', 'month', 'year',
-                    'yesterday', 'today', 'tomorrow']
-    unwanted = []
-    if not ENABLE_SUBDAY_DATES:
-        unwanted.extend(['second', 'minute', 'hour'])
-    if not ENABLE_WEEKDAYS:
-        unwanted.extend(['week', 'weekday'])
-    if not ENABLE_RELATIVE_DATES:
-        unwanted.extend(['now', 'yesterday', 'today', 'tomorrow'])
-    return [choice for choice in date_choices if choice not in unwanted]
+def compose_path(directory, filename_components, format='md'):
+    if components := list(filter(None, filename_components)):
+        filename = f'{"_".join(components)}.{format}'
+        return os.path.join(directory, filename)
+    else:
+        raise ValueError('Insufficient argument list: '
+                         + 'components need to be provided')
 
 
-def create_parser():
+def _parser():
     formatter = make_wide_formatter(argparse.ArgumentDefaultsHelpFormatter)
     parser = argparse.ArgumentParser(formatter_class=formatter,
                                      description='take notes in markdown')
@@ -198,7 +174,32 @@ def create_parser():
     return parser
 
 
+def make_wide_formatter(formatter, w=120, h=36):
+    """Return a wider HelpFormatter, if possible."""
+    try:
+        # https://stackoverflow.com/a/5464440
+        # beware: "Only the name of this class is considered a public API."
+        kwargs = {'width': w, 'max_help_position': h}
+        formatter(None, **kwargs)
+        return lambda prog: formatter(prog, **kwargs)
+    except TypeError:
+        warnings.warn("argparse help formatter failed, falling back.")
+        return formatter
+
+
+def prepare_date_choices():
+    date_choices = ['now', 'second', 'minute', 'hour', 'day',
+                    'weekday', 'week', 'month', 'year',
+                    'yesterday', 'today', 'tomorrow']
+    unwanted = []
+    if not ENABLE_SUBDAY_DATES:
+        unwanted.extend(['second', 'minute', 'hour'])
+    if not ENABLE_WEEKDAYS:
+        unwanted.extend(['week', 'weekday'])
+    if not ENABLE_RELATIVE_DATES:
+        unwanted.extend(['now', 'yesterday', 'today', 'tomorrow'])
+    return [choice for choice in date_choices if choice not in unwanted]
+
+
 if __name__ == '__main__':
-    parser = create_parser()
-    args = parser.parse_args()
-    note(args)
+    main()
