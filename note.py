@@ -65,26 +65,35 @@ def construct_vi_parameters(prefill):
 
 
 def construct_header(args):
+    if not args.TITLE:
+        return None
+
     def format_heading(level, title):
         return ('#' * level) + ' ' + title.strip(' ')
-    title = ' '.join(args.TITLE or [])
+    title = ' '.join(args.TITLE)
     headings = title.split('/')
     prefixed_headings = map(
             lambda pair: format_heading(pair[0], pair[1]),
             enumerate(headings, start=1))
-    return '\n\n'.join(prefixed_headings or [])
+    return '\n\n'.join(prefixed_headings)
 
 
 def fetch_body(args):
     """gets the body from std-in"""
-    return ''.join(args.file.readlines())
+    if not os.isatty(args.input.fileno()):
+        return ''.join(args.input.readlines())
+    else:
+        return ''
     
 
 def construct_md_prefill(args):
     """ Fills a markdown template from hierarchical arguments """
-    header = construct_header(args)
-    body = fetch_body(args)
-    return '\n\n'.join([header, body])
+    components = []
+    if header := construct_header(args):
+        components.append(header)
+    if body := fetch_body(args):
+        components.append(body)
+    return '\n\n'.join(components)
 
 
 def try_to_construct_filepath(args):
@@ -176,7 +185,7 @@ def create_parser():
     parser.add_argument('-n', '--name',
                         help='provide a name')
 
-    parser.add_argument('-f', '--file', 
+    parser.add_argument('-i', '--input', 
                         nargs='?',
                         type=argparse.FileType(),
                         default=sys.stdin,
