@@ -6,6 +6,12 @@ from list_notes import list_notes, show_notes, open_notes
 import subprocess
 import os
 import glob
+import datetime
+import datetime
+import pathlib
+import subprocess
+
+
 
 def _parser():
     prog = 'notebook'
@@ -94,16 +100,44 @@ def get_notebook_manifest(path):
     with open(filepath) as f:
         return f.read().strip('\n')
 
+def get_creation_time(path):
+    p = subprocess.Popen(['stat', '-f%B', path],
+        stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if p.wait():
+        raise OSError(p.stderr.read().rstrip())
+    else:
+        return int(p.stdout.read())
+
+
+def latest_file_modification(notebook_path, pattern):
+    search_md_path = os.path.join(notebook_path, pattern)
+    files = glob.glob(search_md_path)
+    return max(files, key=lambda file: os.stat(file).st_ctime)
+
+
 def print_notebook_details():
     notebook_path = current_notebook()
-    print(f'Location:  {notebook_path}')
 
     if notebook_details := get_notebook_manifest(notebook_path):
-        print(f'Title:     {notebook_details}')
+        print(f'Title:     {notebook_details}\n')
+
+    print(f'Location:  {notebook_path}')
+
+    creation_epoch = get_creation_time(notebook_path)
+    creation_date = datetime.datetime.fromtimestamp(creation_epoch)
+    print(f'Created:   {creation_date}')
+
+    last_edit_file = latest_file_modification(notebook_path, '**/*.md')
+    print(f'Latest:    {last_edit_file}')
+
+    last_edit_epoch = os.path.getmtime(last_edit_file)
+    last_edit_time = datetime.datetime.fromtimestamp(last_edit_epoch)
+    print(f'           {last_edit_time}\n')
 
     search_md_path = os.path.join(notebook_path, "**/*.md")
     md_count = len(glob.glob(search_md_path))
     print(f'# Pages:   {md_count}')
+
 
 def main():
     parser = _parser()
