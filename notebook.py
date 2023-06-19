@@ -81,15 +81,30 @@ def list_notebooks():
     with open('/Users/nick/.notebooks') as f:
         return f.read().strip('\n')
 
+def set_notebook(name):
+    # search list linearly. If found, move the line to the top and return.
+    # if end is reached and notebook is not found, raise error.
+    pass
+
+def get_notebook_manifest(path):
+    filepath = os.path.join(path, '.notebook')
+    with open(filepath) as f:
+        return f.read().strip('\n')
+
+
 def main():
     parser = _parser()
     args = parser.parse_args()
 
     if args.command is None:
-        print(current_notebook())
+        notebook_path = current_notebook()
+        print(get_notebook_manifest(notebook_path))
 
     elif args.command in ['list', 'ls']:
         print(list_notebooks())
+
+    elif args.command == 'set':
+        set_notebook()
 
     elif args.command == 'open':
         show_notes(args.directory)
