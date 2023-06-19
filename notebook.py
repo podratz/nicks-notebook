@@ -91,10 +91,10 @@ def main():
     elif args.command in ['list', 'ls']:
         print(list_notebooks())
 
-    elif args.command == 'show':
+    elif args.command == 'open':
         show_notes(args.directory)
 
-    elif args.command == 'open':
+    elif args.command == 'show':
         open_notes(args.directory)
 
     if args.command == 'note':
