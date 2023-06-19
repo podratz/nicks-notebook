@@ -73,25 +73,29 @@ def fetch_editor():
     return os.getenv('EDITOR')
 
 
+def current_notebook():
+    with open('/Users/nick/.notebooks') as f:
+        return f.readline().strip('\n')
+
+def list_notebooks():
+    with open('/Users/nick/.notebooks') as f:
+        return f.read().strip('\n')
+
 def main():
     parser = _parser()
     args = parser.parse_args()
 
     if args.command is None:
-        path = os.getenv('NOTES')
-        if path is None or path == '':
-            print('Environment variable $NOTES must be defined')
-        else:
-            print(path)
+        print(current_notebook())
+
+    elif args.command in ['list', 'ls']:
+        print(list_notebooks())
 
     elif args.command == 'show':
         show_notes(args.directory)
 
     elif args.command == 'open':
         open_notes(args.directory)
-
-    elif args.command in ['list', 'ls']:
-        list_notes(args.directory)
 
     if args.command == 'note':
         title = ' '.join(args.title)
