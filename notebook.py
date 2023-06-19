@@ -118,25 +118,26 @@ def latest_file_modification(notebook_path, pattern):
 def print_notebook_details():
     notebook_path = current_notebook()
 
-    if notebook_details := get_notebook_manifest(notebook_path):
-        print(f'Title:     {notebook_details}\n')
+    # Title and location
+    if notebook_details := get_notebook_manifest(notebook_path) or 'Notebook':
+        print(f'\033[1m{notebook_details}\033[0m ({notebook_path})')
 
-    print(f'Location:  {notebook_path}')
 
+    # Creation date and page count
     creation_epoch = get_creation_time(notebook_path)
     creation_date = datetime.datetime.fromtimestamp(creation_epoch)
-    print(f'Created:   {creation_date}')
-
-    last_edit_file = latest_file_modification(notebook_path, '**/*.md')
-    print(f'Latest:    {last_edit_file}')
-
-    last_edit_epoch = os.path.getmtime(last_edit_file)
-    last_edit_time = datetime.datetime.fromtimestamp(last_edit_epoch)
-    print(f'           {last_edit_time}\n')
-
+    today = datetime.date.today()
+    relative_months = (today.year - creation_date.year) * 12\
+                     + (today.month - creation_date.month)
     search_md_path = os.path.join(notebook_path, "**/*.md")
     md_count = len(glob.glob(search_md_path))
-    print(f'# Pages:   {md_count}')
+    print(f'Created in {creation_date.year} '
+          f'({relative_months} months ago), {md_count} pages\n')
+
+    # Recently edited
+    print('Recently edited:')
+    last_edit_file = latest_file_modification(notebook_path, '**/*.md')
+    print(f'{last_edit_file}')
 
 
 def main():
