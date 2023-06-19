@@ -99,6 +99,7 @@ def main():
     if args.command is None:
         notebook_path = current_notebook()
         print(get_notebook_manifest(notebook_path))
+        print(f'Location: {notebook_path}')
 
     elif args.command in ['list', 'ls']:
         print(list_notebooks())
