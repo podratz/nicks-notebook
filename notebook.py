@@ -89,22 +89,28 @@ def set_notebook(name):
 
 def get_notebook_manifest(path):
     filepath = os.path.join(path, '.notebook')
+    if not os.path.isfile(filepath):
+        return None
     with open(filepath) as f:
         return f.read().strip('\n')
 
+def print_notebook_details():
+    notebook_path = current_notebook()
+    print(f'Location:  {notebook_path}')
+
+    if notebook_details := get_notebook_manifest(notebook_path):
+        print(f'Title:     {notebook_details}')
+
+    search_md_path = os.path.join(notebook_path, "**/*.md")
+    md_count = len(glob.glob(search_md_path))
+    print(f'# Pages:   {md_count}')
 
 def main():
     parser = _parser()
     args = parser.parse_args()
 
     if args.command is None:
-        notebook_path = current_notebook()
-        notebook_details = get_notebook_manifest(notebook_path)
-        search_md_path = os.path.join(notebook_path, "**/*.md")
-        md_count = len(glob.glob(search_md_path))
-        print(f'Title:     {notebook_details}')
-        print(f'Location:  {notebook_path}')
-        print(f'# Pages:   {md_count}')
+        print_notebook_details()
 
     elif args.command in ['list', 'ls']:
         print(list_notebooks())
