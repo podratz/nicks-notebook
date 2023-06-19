@@ -5,6 +5,7 @@ from note import note
 from list_notes import list_notes, show_notes, open_notes
 import subprocess
 import os
+import glob
 
 def _parser():
     prog = 'notebook'
@@ -98,8 +99,12 @@ def main():
 
     if args.command is None:
         notebook_path = current_notebook()
-        print(get_notebook_manifest(notebook_path))
-        print(f'Location: {notebook_path}')
+        notebook_details = get_notebook_manifest(notebook_path)
+        search_md_path = os.path.join(notebook_path, "**/*.md")
+        md_count = len(glob.glob(search_md_path))
+        print(f'Title:     {notebook_details}')
+        print(f'Location:  {notebook_path}')
+        print(f'# Pages:   {md_count}')
 
     elif args.command in ['list', 'ls']:
         print(list_notebooks())
