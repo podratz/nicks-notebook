@@ -15,7 +15,7 @@ import subprocess
 
 def _parser():
     prog = 'notebook'
-    description = 'helps you manage notebooks in markdown'
+    description = 'helps you manage your notebooks in markdown'
 
     # initialization
     parser = argparse.ArgumentParser(prog=prog, description=description)
@@ -23,37 +23,47 @@ def _parser():
     # interpret remainder as note header
     # parser.add_argument('title', nargs=argparse.REMAINDER)
     
-    # prepare subparsers
+    # prepare notebook management subparsers
     subparsers = parser.add_subparsers(title='Commands',
-                                       description='Commands to faciliate working with your notebook',
-                                       dest='command'
-                                       )
+                                       description='Commands for managing your notebooks',
+                                       dest='command',
+                                       metavar='COMMAND')
     
-    # show subparser
-    show_parser = subparsers.add_parser('show', help='show the overview of your notes in your editor')
-    show_parser.add_argument('directory', nargs='?', default='', help='select a subdirectory to show')
-    
-    # open subparser
-    open_parser = subparsers.add_parser('open', help='open your notes in Finder')
-    open_parser.add_argument('directory', nargs='?', default='', help='select a subdirectory to open')
+    # create subparser
+    create_parser = subparsers.add_parser('create', help='create a new notebook')
+    create_parser.add_argument('location', nargs='?', default='~/Notes',
+                               help='Provide a location for your new notebook')
     
     # list subparser
     list_parser = subparsers.add_parser('list',
                                         # metavar='list',
-                                        aliases=['ls'],
-                                        help='show and list all your notes')
+                                        help='list your notebooks')
+
+    # open subparser
+    open_parser = subparsers.add_parser('open', help='open your notebook in your editor')
+    open_parser.add_argument('directory', nargs='?', default='', help='select a subdirectory to open')
+    
+    # show subparser
+    show_parser = subparsers.add_parser('show', help='show your notebook in Finder')
+    show_parser.add_argument('directory', nargs='?', default='', help='select a subdirectory to show')
+    
     # list_parser.set_defaults(func=list_notes)
     list_parser.add_argument('directory', nargs='?', default='', help='select a subdirectory to display')
     
-    # note subparser
-    note_parser = subparsers.add_parser('note', help='create a new note')
-
-    note_parser.set_defaults(func=note)
-    bind_parser = subparsers.add_parser('bind',
-                                        help='bind your notes into a pdf file')
+    # bind subparser
+    bind_parser = subparsers.add_parser('bind', help='bind your notebook as PDF')
     bind_parser.set_defaults(func=pandoc)
     bind_parser.add_argument('directory', nargs='?', default='', help='select a subdirectory to bind')
     # pattern matching would be very cool here to for example only print one month, or later everything containing/matching a hashtag
+
+    # prepare note-taking subparsers
+    # editing_subparsers = parser.add_subparsers(title='Editing Commands',
+    #                                    description='Commands to faciliate working with your notebook',
+    #                                    dest='editing_command')
+    # # note subparser
+    # note_parser = editing_subparsers.add_parser('note', help='create a new note')
+    # note_parser.set_defaults(func=note)
+
     return parser
 
 # bind subparser
@@ -140,6 +150,9 @@ def print_notebook_details():
     print(f'{last_edit_file}')
 
 
+def create_notebook():
+    print('Create notebook called')
+
 def main():
     parser = _parser()
     args = parser.parse_args()
@@ -147,11 +160,14 @@ def main():
     if args.command is None:
         print_notebook_details()
 
-    elif args.command in ['list', 'ls']:
+    elif args.command == 'list':
         print(list_notebooks())
 
     elif args.command == 'set':
         set_notebook()
+
+    elif args.command == 'create':
+        create_notebook()
 
     elif args.command == 'open':
         show_notes(args.directory)
