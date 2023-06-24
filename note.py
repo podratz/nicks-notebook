@@ -82,7 +82,7 @@ def construct_md_prefill(args):
 
 
 def fetch_directory(date_prefix):
-    var_name = 'DAILY' if date_prefix else 'NOTES'
+    var_name = 'DAILY_NOTES' if date_prefix else 'NOTES'
     return os.getenv(var_name)
 
 
