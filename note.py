@@ -4,7 +4,6 @@ import argparse
 import os
 import sys
 import warnings
-# import re
 
 ENABLE_WEEKDAYS = False
 ENABLE_SUBDAY_DATES = False
@@ -45,7 +44,7 @@ def try_to_construct_editor_parameters(editor, args):
 
 
 def construct_vi_parameters(prefill):
-    vi_cmd = f':set filetype=markdown | set path+=** | :execute "$normal A{prefill}"'
+    vi_cmd = f':set filetype=markdown|set path+=**|:exe "$normal A{prefill}"'
     return f"-c '{vi_cmd}'"
 
 
@@ -69,7 +68,7 @@ def fetch_body(args):
         return ''.join(args.input.readlines())
     else:
         return ''
-    
+
 
 def construct_md_prefill(args):
     """ Fills a markdown template from hierarchical arguments """
@@ -83,7 +82,7 @@ def construct_md_prefill(args):
 
 def fetch_directory(date_prefix):
     var_name = 'DAILY_NOTES' if date_prefix else 'NOTES'
-    return os.getenv(var_name)
+    return os.getenv(var_name) or os.getenv('NOTES') or None
 
 
 def try_to_construct_filepath(args):
@@ -161,7 +160,7 @@ def _parser():
     parser.add_argument('-n', '--name',
                         help='provide a name')
 
-    parser.add_argument('-i', '--input', 
+    parser.add_argument('-i', '--input',
                         nargs='?',
                         type=argparse.FileType(),
                         default=sys.stdin,
