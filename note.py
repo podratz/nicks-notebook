@@ -9,28 +9,18 @@ ENABLE_WEEKDAYS = False
 ENABLE_SUBDAY_DATES = False
 ENABLE_RELATIVE_DATES = True
 
-
-def note(editor, parameters, filepath):
-    """ Create a note """
-    os.system(f"{editor} {parameters} {filepath}")
-
-
-def main():
-    parser = _parser()
-    args = parser.parse_args()
-
-    editor = fetch_editor() or 'vi'
-    parameters = try_to_construct_editor_parameters(editor, args) or ''
-    filepath = try_to_construct_filepath(args) or ''
-
-    note(editor, parameters, filepath)
-
-
 def fetch_editor():
     try:
         return os.environ['EDITOR']
     except KeyError as e:
         print("Error: EDITOR environment variable needs to be defined", e)
+
+class Note:
+    def __init__(self, filepath: str):
+        self.filepath = filepath
+
+    def open(self, editor, parameters):
+        os.system(f"{editor} {parameters} {self.filepath}")
 
 
 def try_to_construct_editor_parameters(editor, args):
@@ -198,6 +188,20 @@ def prepare_date_choices():
     if not ENABLE_RELATIVE_DATES:
         unwanted.extend(['now', 'yesterday', 'today', 'tomorrow'])
     return [choice for choice in date_choices if choice not in unwanted]
+
+
+def main():
+    parser = _parser()
+    args = parser.parse_args()
+
+    # create note
+    filepath = try_to_construct_filepath(args) or ''
+    note = Note(filepath)
+
+    # open note
+    editor = fetch_editor() or 'vi'
+    parameters = try_to_construct_editor_parameters(editor, args) or ''
+    note.open(editor, parameters)
 
 
 if __name__ == '__main__':
