@@ -18,10 +18,25 @@ def fetch_editor():
     except KeyError as e:
         print("Error: EDITOR environment variable needs to be defined", e)
 
-
 def fetch_directory(date_prefix):
     var_name = 'DAILY_NOTES' if date_prefix else 'NOTES'
     return os.getenv(var_name) or os.getenv('NOTES') or None
+
+
+##  MARK: Editor parameterization
+
+class UnsupportedEditorException(Exception):
+    def __init__(self, editor):
+        self.editor = editor
+        super().__init__(editor)
+
+def construct_editor_params(editor, prefill):
+    match editor:
+        case 'vi' | 'vim' | 'nvim':
+            cmd = f':set filetype=markdown|set path+=**|:exe "$normal A{prefill}"'
+            return f"-c '{cmd}'"
+        case _:
+            raise UnsupportedEditorException(editor)
 
 
 ## MARK: Note class
@@ -40,23 +55,14 @@ class Note:
 
     def open(self, editor=None, prefill=None):
         editor = editor or fetch_editor() or 'vi'
-        editor_parameters = try_to_construct_editor_parameters(editor, prefill) or ''
-        os.system(f"{editor} {editor_parameters} {self.filepath}")
+        try:
+            editor_params = construct_editor_params(editor, prefill)
+        except UnsupportedEditorException:
+            editor_params = ''
+        os.system(f"{editor} {editor_params} {self.filepath}")
 
 
 ## MARK: Argument parsing
-
-def try_to_construct_editor_parameters(editor, prefill):
-    match editor:
-        case 'vi' | 'vim' | 'nvim':
-            return construct_vi_parameters(prefill)
-        case _:
-            # other editors are not yet supported -> edit file without prefill
-            return None
-
-def construct_vi_parameters(prefill):
-    vi_cmd = f':set filetype=markdown|set path+=**|:exe "$normal A{prefill}"'
-    return f"-c '{vi_cmd}'"
 
 def construct_header(args):
     if not args.TITLE:
@@ -78,7 +84,6 @@ def fetch_body(args):
         return ''.join(args.input.readlines())
     else:
         return ''
-
 
 def construct_md_prefill(args):
     """ Fills a markdown template from hierarchical arguments """
