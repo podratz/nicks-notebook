@@ -7,8 +7,9 @@ import subprocess
 import os
 import glob
 import datetime
+from typing import Optional
 
-class Notebook:
+class NotebookRegistry:
 
     @classmethod
     def get_current(cls):
@@ -16,17 +17,21 @@ class Notebook:
             directory = f.readline().rstrip('\n')
         return Notebook(directory)
 
+    @classmethod
+    def set_current(cls, notebook):
+        # search list linearly. If found, move the line to the top and return.
+        # if end is reached and notebook is not found, raise error.
+        raise NotImplementedError()
+
+class Notebook:
+
     def __init__(self, directory):
         self.directory = directory
 
     def note(self, title) -> Note:
+        '''Creates or amends a note.'''
         path = os.path.join(self.directory, title)
         return Note(path)
-
-    def set_current(self):
-        # search list linearly. If found, move the line to the top and return.
-        # if end is reached and notebook is not found, raise error.
-        raise NotImplementedError()
 
     def get_details(self):
         # Title and location
@@ -80,11 +85,9 @@ def fetch_editor():
     return os.getenv('EDITOR')
 
 
-
 def list_notebooks():
     with open('/Users/nick/.notebooks') as f:
         return f.read().strip('\n')
-
 
 
 def get_creation_time(path):
@@ -173,7 +176,7 @@ def main():
     args = parser.parse_args()
 
     if args.command is None:
-        notebook = Notebook.get_current()
+        notebook = NotebookRegistry.get_current()
         details = notebook.get_details
         print(details)
 
@@ -181,7 +184,7 @@ def main():
         print(list_notebooks())
 
     elif args.command == 'set':
-        Notebook.set_current()
+        raise NotImplementedError()
 
     elif args.command == 'create':
         Notebook(None)
@@ -193,13 +196,13 @@ def main():
         open_notes(args.directory)
 
     if args.command == 'note':
-        title = ' '.join(args.title)
-        notebook = Notebook.get_current()
-        note = notebook.note(title)
+        notebook = NotebookRegistry.get_current()
+        note_title = ' '.join(args.title)
+        note = notebook.note(note_title)
         note.open()
 
     elif args.command == 'bind':
-        notebook = Notebook.get_current()
+        notebook = NotebookRegistry.get_current()
         notebook_directory = notebook.directory
         try:
             pandoc(notebook_directory, '.pdf')
