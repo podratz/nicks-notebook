@@ -9,13 +9,32 @@ ENABLE_WEEKDAYS = False
 ENABLE_SUBDAY_DATES = False
 ENABLE_RELATIVE_DATES = True
 
+
+## MARK: Environment
+
 def fetch_editor():
     try:
         return os.environ['EDITOR']
     except KeyError as e:
         print("Error: EDITOR environment variable needs to be defined", e)
 
+
+def fetch_directory(date_prefix):
+    var_name = 'DAILY_NOTES' if date_prefix else 'NOTES'
+    return os.getenv(var_name) or os.getenv('NOTES') or None
+
+
+## MARK: Note class
+
 class Note:
+    @classmethod
+    def compose_path(cls, directory, filename_components, format='md'):
+        if components := list(filter(None, filename_components)):
+            filename = f'{"_".join(components)}.{format}'
+            return os.path.join(directory, filename)
+        else:
+            raise ValueError('Insufficient argument list: components need to be provided')
+
     def __init__(self, filepath: str):
         self.filepath = filepath
 
@@ -25,6 +44,8 @@ class Note:
         os.system(f"{editor} {editor_parameters} {self.filepath}")
 
 
+## MARK: Argument parsing
+
 def try_to_construct_editor_parameters(editor, prefill):
     match editor:
         case 'vi' | 'vim' | 'nvim':
@@ -33,11 +54,9 @@ def try_to_construct_editor_parameters(editor, prefill):
             # other editors are not yet supported -> edit file without prefill
             return None
 
-
 def construct_vi_parameters(prefill):
     vi_cmd = f':set filetype=markdown|set path+=**|:exe "$normal A{prefill}"'
     return f"-c '{vi_cmd}'"
-
 
 def construct_header(args):
     if not args.TITLE:
@@ -71,17 +90,14 @@ def construct_md_prefill(args):
     return '\n\n'.join(components)
 
 
-def fetch_directory(date_prefix):
-    var_name = 'DAILY_NOTES' if date_prefix else 'NOTES'
-    return os.getenv(var_name) or os.getenv('NOTES') or None
-
 
 def try_to_construct_filepath(args):
     date_prefix = construct_date_string(args)
     name_appendix = args.name
     if date_prefix or name_appendix:
         directory = fetch_directory(date_prefix)
-        return compose_path(directory, [date_prefix, name_appendix])
+        note_path = Note.compose_path(directory, [date_prefix, name_appendix])
+        return note_path
     else:
         return None
 
@@ -127,15 +143,6 @@ def extract_date_offset(args):
         return +1
     else:
         return None
-
-
-def compose_path(directory, filename_components, format='md'):
-    if components := list(filter(None, filename_components)):
-        filename = f'{"_".join(components)}.{format}'
-        return os.path.join(directory, filename)
-    else:
-        raise ValueError('Insufficient argument list: '
-                         + 'components need to be provided')
 
 
 def _parser():
