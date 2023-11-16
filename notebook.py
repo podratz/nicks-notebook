@@ -7,7 +7,6 @@ import subprocess
 import os
 import glob
 import datetime
-from typing import Optional
 
 class NotebookRegistry:
 
@@ -19,9 +18,13 @@ class NotebookRegistry:
 
     @classmethod
     def set_current(cls, notebook):
-        # search list linearly. If found, move the line to the top and return.
-        # if end is reached and notebook is not found, raise error.
-        raise NotImplementedError()
+        with open('/Users/nick/.notebooks', 'r') as file:
+            lines = file.readlines()
+        with open('/Users/nick/.notebooks', 'w') as file:
+            file.write(notebook.directory)
+            for line in lines:
+                if not line.startswith(notebook.directory):
+                    file.write(line)
 
 class Notebook:
 
