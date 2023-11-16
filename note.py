@@ -2,6 +2,7 @@
 from datetime import datetime, timedelta
 import argparse
 import os
+import subprocess
 import sys
 import warnings
 
@@ -60,6 +61,17 @@ class Note:
         except UnsupportedEditorException:
             editor_params = ''
         os.system(f"{editor} {editor_params} {self.filepath}")
+
+    def export(self, target_format):
+        '''Exports specified file to a specifiable file format.'''
+        # TODO manage pandoc errors, for example exit status 43 when citations include Snigowski et al. 2000
+        options = ['pandoc', self.filepath, '-o', self.filepath + target_format]
+        # options += ['--ascii', '-s', '--toc'] # some extra options
+        # options += ['--variable=geometry:' + 'a4paper'] # to override the default letter size
+        options_string = ' '.join(options)
+        print(options_string)  # for debugging
+        return subprocess.check_call(options_string)
+
 
 
 ## MARK: Argument parsing

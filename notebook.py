@@ -3,7 +3,6 @@
 import argparse
 from list_notes import show_notes, open_notes
 from note import Note
-import subprocess
 import os
 import glob
 import datetime
@@ -68,16 +67,6 @@ class Notebook:
         with open(filepath) as f:
             return f.read().strip('\n')
 
-
-def pandoc(filename, extension):
-    '''Export specified file to a specifiable file format.'''
-    # TODO manage pandoc errors, for example exit status 43 when citations include Snigowski et al. 2000
-    options = ['pandoc', filename, '-o', filename + extension]
-    # options += ['--ascii', '-s', '--toc'] # some extra options
-    # options += ['--variable=geometry:' + 'a4paper'] # to override the default letter size
-    options_string = ' '.join(options)
-    print(options_string)  # for debugging
-    return subprocess.check_call(options_string)
 
 
 def edit_file(editor, editor_args, filename):
@@ -162,7 +151,7 @@ def _parser():
     # bind subparser
     bind_parser = subparsers.add_parser(
         'bind', help='bind your notebook as PDF')
-    bind_parser.set_defaults(func=pandoc)
+    bind_parser.set_defaults(func=Note.export)
     bind_parser.add_argument('directory', nargs='?',
                              default='', help='select a subdirectory to bind')
     # pattern matching would be very cool here to for example only print one month, or later everything containing/matching a hashtag
@@ -211,12 +200,14 @@ def main():
         note.open()
 
     elif args.command == 'bind':
-        notebook = NotebookRegistry.get_current()
-        notebook_directory = notebook.directory
-        try:
-            pandoc(notebook_directory, '.pdf')
-        except Exception:
-            print('Export to pdf failed')
+        pass
+        # notebook = NotebookRegistry.get_current()
+        # notebook_directory = notebook.directory
+        # join the notes together, then call pandoc on the joined note.
+        # try:
+        #     export(notebook_directory, '.pdf')
+        # except Exception:
+        #     print('Export to pdf failed')
 
 
 if __name__ == '__main__':
