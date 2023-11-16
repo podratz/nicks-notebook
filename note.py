@@ -108,15 +108,15 @@ def construct_md_prefill(args):
 
 
 
-def try_to_construct_filepath(args):
+
+def construct_filepath(args):
     date_prefix = construct_date_string(args)
     name_appendix = args.name
-    if date_prefix or name_appendix:
-        directory = fetch_directory(date_prefix)
-        note_path = Note.compose_path(directory, [date_prefix, name_appendix])
-        return note_path
-    else:
-        return None
+    if date_prefix is None and name_appendix is None:
+        raise KeyError('Either a date prefix or a name prefix must be provided')
+    directory = fetch_directory(date_prefix)
+    note_path = Note.compose_path(directory, [date_prefix, name_appendix])
+    return note_path
 
 
 def construct_date_string(args):
@@ -204,9 +204,12 @@ def main():
     args = parser.parse_args()
 
     # create note
-    filepath = try_to_construct_filepath(args) or ''
-    note = Note(filepath)
+    try:
+        filepath = construct_filepath(args)
+    except KeyError:
+        filepath = None
 
+    note = Note(filepath or '')
     # open note
     prefill = construct_md_prefill(args)
     note.open(prefill=prefill)
