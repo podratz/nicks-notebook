@@ -19,15 +19,16 @@ class Note:
     def __init__(self, filepath: str):
         self.filepath = filepath
 
-    def open(self, editor, parameters):
-        os.system(f"{editor} {parameters} {self.filepath}")
+    def open(self, editor=None, prefill=None):
+        editor = editor or fetch_editor() or 'vi'
+        editor_parameters = try_to_construct_editor_parameters(editor, prefill) or ''
+        os.system(f"{editor} {editor_parameters} {self.filepath}")
 
 
-def try_to_construct_editor_parameters(editor, args):
-    content = construct_md_prefill(args)
+def try_to_construct_editor_parameters(editor, prefill):
     match editor:
         case 'vi' | 'vim' | 'nvim':
-            return construct_vi_parameters(content)
+            return construct_vi_parameters(prefill)
         case _:
             # other editors are not yet supported -> edit file without prefill
             return None
@@ -199,9 +200,8 @@ def main():
     note = Note(filepath)
 
     # open note
-    editor = fetch_editor() or 'vi'
-    parameters = try_to_construct_editor_parameters(editor, args) or ''
-    note.open(editor, parameters)
+    prefill = construct_md_prefill(args)
+    note.open(prefill=prefill)
 
 
 if __name__ == '__main__':
