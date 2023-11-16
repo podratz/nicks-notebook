@@ -1,13 +1,115 @@
 #!/usr/bin/env python3
 # from mpcurses import mpcurses
 import argparse
-from note import note
 from list_notes import show_notes, open_notes
+from note import Note
 import subprocess
 import os
 import glob
 import datetime
 
+class Notebook:
+
+    @classmethod
+    def current(cls):
+        with open('/Users/nick/.notebooks') as f:
+            directory = f.readline().strip('\n')
+        return Notebook(directory)
+
+    @classmethod
+    def set_notebook(cls, name):
+        # search list linearly. If found, move the line to the top and return.
+        # if end is reached and notebook is not found, raise error.
+        pass
+
+    ## Instance methods
+
+    def __init__(self, directory):
+        self.directory = directory
+        print('Create notebook called')
+
+    def note(self, title) -> Note:
+        path = os.path.join(self.directory, title)
+        return Note(path)
+
+    @property
+    def details(self):
+        # Title and location
+        if notebook_details := self.get_manifest() or 'Notebook':
+            print(f'\033[1m{notebook_details}\033[0m ({self.directory})')
+
+        # Creation date and page count
+        creation_epoch = get_creation_time(self.directory)
+        creation_date = datetime.datetime.fromtimestamp(creation_epoch)
+        today = datetime.date.today()
+        relative_months = (today.year - creation_date.year) * 12\
+            + (today.month - creation_date.month)
+        search_md_path = os.path.join(self.directory, "**/*.md")
+        md_count = len(glob.glob(search_md_path))
+        print(f'Created in {creation_date.year} '
+              f'({relative_months} months ago), {md_count} pages\n')
+
+        # Recently edited
+        print('Recently edited:')
+        last_edit_file = latest_file_modification(self.directory, '**/*.md')
+        print(f'{last_edit_file}')
+
+
+    def get_manifest(self):
+        filepath = os.path.join(self.directory, '.notebook')
+        if not os.path.isfile(filepath):
+            return None
+        with open(filepath) as f:
+            return f.read().strip('\n')
+
+
+def pandoc(filename, extension):
+    # TODO manage pandoc errors, for example exit status 43 when citations include Snigowski et al. 2000
+    options = ['pandoc', filename, '-o', filename + extension]
+    # options += ['--ascii', '-s', '--toc'] # some extra options
+    # options += ['--variable=geometry:' + 'a4paper'] # to override the default letter size
+    options_string = ' '.join(options)
+    print(options_string)  # for debugging
+    return subprocess.check_call(options_string)
+
+
+def edit_file(editor, editor_args, filename):
+    os.system(f"{editor} {editor_args} {filename}")
+
+
+def fetch_directory(date_prefix):
+    slot = 'DAILY' if date_prefix else 'NOTEBOOK'
+    return os.getenv(slot)
+
+
+def fetch_editor():
+    return os.getenv('EDITOR')
+
+
+
+def list_notebooks():
+    with open('/Users/nick/.notebooks') as f:
+        return f.read().strip('\n')
+
+
+
+def get_creation_time(path):
+    p = subprocess.Popen(['stat', '-f%B', path],
+                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    if p.wait():
+        raise OSError(p.stderr.read().rstrip())
+    else:
+        return int(p.stdout.read())
+
+
+def latest_file_modification(notebook_path, pattern):
+    search_md_path = os.path.join(notebook_path, pattern)
+    files = glob.glob(search_md_path)
+    return max(files, key=lambda file: os.stat(file).st_ctime)
+
+
+
+# Until here, we have to refactor into the Notebook class
 
 def _parser():
     prog = 'notebook'
@@ -72,111 +174,24 @@ def _parser():
 # bind subparser
 
 
-def pandoc(filename, extension):
-    # TODO manage pandoc errors, for example exit status 43 when citations include Snigowski et al. 2000
-    options = ['pandoc', filename, '-o', filename + extension]
-    # options += ['--ascii', '-s', '--toc'] # some extra options
-    # options += ['--variable=geometry:' + 'a4paper'] # to override the default letter size
-    options_string = ' '.join(options)
-    print(options_string)  # for debugging
-    return subprocess.check_call(options_string)
-
-
-def edit_file(editor, editor_args, filename):
-    os.system(f"{editor} {editor_args} {filename}")
-
-
-def fetch_directory(date_prefix):
-    slot = 'DAILY' if date_prefix else 'NOTEBOOK'
-    return os.getenv(slot)
-
-
-def fetch_editor():
-    return os.getenv('EDITOR')
-
-
-def current_notebook():
-    with open('/Users/nick/.notebooks') as f:
-        return f.readline().strip('\n')
-
-
-def list_notebooks():
-    with open('/Users/nick/.notebooks') as f:
-        return f.read().strip('\n')
-
-
-def set_notebook(name):
-    # search list linearly. If found, move the line to the top and return.
-    # if end is reached and notebook is not found, raise error.
-    pass
-
-
-def get_notebook_manifest(path):
-    filepath = os.path.join(path, '.notebook')
-    if not os.path.isfile(filepath):
-        return None
-    with open(filepath) as f:
-        return f.read().strip('\n')
-
-
-def get_creation_time(path):
-    p = subprocess.Popen(['stat', '-f%B', path],
-                         stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    if p.wait():
-        raise OSError(p.stderr.read().rstrip())
-    else:
-        return int(p.stdout.read())
-
-
-def latest_file_modification(notebook_path, pattern):
-    search_md_path = os.path.join(notebook_path, pattern)
-    files = glob.glob(search_md_path)
-    return max(files, key=lambda file: os.stat(file).st_ctime)
-
-
-def print_notebook_details():
-    notebook_path = current_notebook()
-
-    # Title and location
-    if notebook_details := get_notebook_manifest(notebook_path) or 'Notebook':
-        print(f'\033[1m{notebook_details}\033[0m ({notebook_path})')
-
-    # Creation date and page count
-    creation_epoch = get_creation_time(notebook_path)
-    creation_date = datetime.datetime.fromtimestamp(creation_epoch)
-    today = datetime.date.today()
-    relative_months = (today.year - creation_date.year) * 12\
-        + (today.month - creation_date.month)
-    search_md_path = os.path.join(notebook_path, "**/*.md")
-    md_count = len(glob.glob(search_md_path))
-    print(f'Created in {creation_date.year} '
-          f'({relative_months} months ago), {md_count} pages\n')
-
-    # Recently edited
-    print('Recently edited:')
-    last_edit_file = latest_file_modification(notebook_path, '**/*.md')
-    print(f'{last_edit_file}')
-
-
-def create_notebook():
-    print('Create notebook called')
-
-
 def main():
     parser = _parser()
     args = parser.parse_args()
 
     if args.command is None:
-        print_notebook_details()
+        notebook = Notebook.current()
+        details = notebook.details
+        print(details)
 
     elif args.command == 'list':
         print(list_notebooks())
 
     elif args.command == 'set':
-        set_notebook()
+        name = None  # TODO: Parse from args
+        Notebook.set_notebook(name)
 
     elif args.command == 'create':
-        create_notebook()
+        Notebook(None)
 
     elif args.command == 'open':
         show_notes(args.directory)
@@ -186,12 +201,15 @@ def main():
 
     if args.command == 'note':
         title = ' '.join(args.title)
-        note(title=title)
+        notebook = Notebook.current()
+        note = notebook.note(title)
+        note.open()
 
     elif args.command == 'bind':
-        input_file = current_notebook()
+        notebook = Notebook.current()
+        notebook_directory = notebook.directory
         try:
-            pandoc(input_file, '.pdf')
+            pandoc(notebook_directory, '.pdf')
         except Exception:
             print('Export to pdf failed')
 
