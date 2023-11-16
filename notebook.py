@@ -11,29 +11,24 @@ import datetime
 class Notebook:
 
     @classmethod
-    def current(cls):
+    def get_current(cls):
         with open('/Users/nick/.notebooks') as f:
-            directory = f.readline().strip('\n')
+            directory = f.readline().rstrip('\n')
         return Notebook(directory)
-
-    @classmethod
-    def set_notebook(cls, name):
-        # search list linearly. If found, move the line to the top and return.
-        # if end is reached and notebook is not found, raise error.
-        pass
-
-    ## Instance methods
 
     def __init__(self, directory):
         self.directory = directory
-        print('Create notebook called')
 
     def note(self, title) -> Note:
         path = os.path.join(self.directory, title)
         return Note(path)
 
-    @property
-    def details(self):
+    def set_current(self):
+        # search list linearly. If found, move the line to the top and return.
+        # if end is reached and notebook is not found, raise error.
+        raise NotImplementedError()
+
+    def get_details(self):
         # Title and location
         if notebook_details := self.get_manifest() or 'Notebook':
             print(f'\033[1m{notebook_details}\033[0m ({self.directory})')
@@ -53,7 +48,6 @@ class Notebook:
         print('Recently edited:')
         last_edit_file = latest_file_modification(self.directory, '**/*.md')
         print(f'{last_edit_file}')
-
 
     def get_manifest(self):
         filepath = os.path.join(self.directory, '.notebook')
@@ -179,16 +173,15 @@ def main():
     args = parser.parse_args()
 
     if args.command is None:
-        notebook = Notebook.current()
-        details = notebook.details
+        notebook = Notebook.get_current()
+        details = notebook.get_details
         print(details)
 
     elif args.command == 'list':
         print(list_notebooks())
 
     elif args.command == 'set':
-        name = None  # TODO: Parse from args
-        Notebook.set_notebook(name)
+        Notebook.set_current()
 
     elif args.command == 'create':
         Notebook(None)
@@ -201,12 +194,12 @@ def main():
 
     if args.command == 'note':
         title = ' '.join(args.title)
-        notebook = Notebook.current()
+        notebook = Notebook.get_current()
         note = notebook.note(title)
         note.open()
 
     elif args.command == 'bind':
-        notebook = Notebook.current()
+        notebook = Notebook.get_current()
         notebook_directory = notebook.directory
         try:
             pandoc(notebook_directory, '.pdf')

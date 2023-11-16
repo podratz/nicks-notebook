@@ -138,7 +138,6 @@ def extract_date_format_string(args):
     else:
         return None
 
-
 # prepare dated arguments
 def extract_date_offset(args):
     date = args.date[0] if args.date else None
@@ -148,46 +147,6 @@ def extract_date_offset(args):
         return +1
     else:
         return None
-
-
-def _parser():
-    formatter = make_wide_formatter(argparse.ArgumentDefaultsHelpFormatter)
-    parser = argparse.ArgumentParser(formatter_class=formatter,
-                                     description='take notes in markdown')
-
-    parser.add_argument('-d', '--date',
-                        metavar='DATE',
-                        choices=prepare_date_choices(),
-                        help='provide a date')
-
-    parser.add_argument('-n', '--name',
-                        help='provide a name')
-
-    parser.add_argument('-i', '--input',
-                        nargs='?',
-                        type=argparse.FileType(),
-                        default=sys.stdin,
-                        help='provide input')
-
-    parser.add_argument('TITLE',
-                        nargs=argparse.REMAINDER,
-                        help='set your note\'s title')
-
-    return parser
-
-
-def make_wide_formatter(formatter, w=120, h=36):
-    """Return a wider HelpFormatter, if possible."""
-    try:
-        # https://stackoverflow.com/a/5464440
-        # beware: "Only the name of this class is considered a public API."
-        kwargs = {'width': w, 'max_help_position': h}
-        formatter(None, **kwargs)
-        return lambda prog: formatter(prog, **kwargs)
-    except TypeError:
-        warnings.warn("argparse help formatter failed, falling back.")
-        return formatter
-
 
 def prepare_date_choices():
     date_choices = ['now', 'second', 'minute', 'hour', 'day',
@@ -202,9 +161,34 @@ def prepare_date_choices():
         unwanted.extend(['now', 'yesterday', 'today', 'tomorrow'])
     return [choice for choice in date_choices if choice not in unwanted]
 
+def make_wide_formatter(formatter, w=120, h=36):
+    """Return a wider HelpFormatter, if possible."""
+    try:
+        # https://stackoverflow.com/a/5464440
+        # beware: "Only the name of this class is considered a public API."
+        kwargs = {'width': w, 'max_help_position': h}
+        formatter(None, **kwargs)
+        return lambda prog: formatter(prog, **kwargs)
+    except TypeError:
+        warnings.warn("argparse help formatter failed, falling back.")
+        return formatter
+
+def make_parser():
+    formatter = make_wide_formatter(argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(formatter_class=formatter, description='take notes in markdown')
+
+    # options
+    parser.add_argument('-d', '--date', metavar='DATE', choices=prepare_date_choices(), help='provide a date')
+    parser.add_argument('-n', '--name', help='provide a name')
+    parser.add_argument('-i', '--input', nargs='?', type=argparse.FileType(), default=sys.stdin, help='provide input')
+
+    # positional
+    parser.add_argument('TITLE', nargs=argparse.REMAINDER, help="set your note's title")
+
+    return parser
 
 def main():
-    parser = _parser()
+    parser = make_parser()
     args = parser.parse_args()
 
     # create note
@@ -214,7 +198,6 @@ def main():
     # open note
     prefill = construct_md_prefill(args)
     note.open(prefill=prefill)
-
 
 if __name__ == '__main__':
     main()
