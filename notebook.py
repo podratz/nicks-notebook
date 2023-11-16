@@ -12,12 +12,14 @@ class NotebookRegistry:
 
     @classmethod
     def get_current(cls):
+        '''Gets the currently active notebook.'''
         with open('/Users/nick/.notebooks') as f:
             directory = f.readline().rstrip('\n')
         return Notebook(directory)
 
     @classmethod
     def set_current(cls, notebook):
+        '''Sets the currently active notebook.'''
         with open('/Users/nick/.notebooks', 'r') as file:
             lines = file.readlines()
         with open('/Users/nick/.notebooks', 'w') as file:
@@ -37,6 +39,7 @@ class Notebook:
         return Note(path)
 
     def get_details(self):
+        '''Get computed metadata about the notebook.'''
         # Title and location
         if notebook_details := self.get_manifest() or 'Notebook':
             print(f'\033[1m{notebook_details}\033[0m ({self.directory})')
@@ -58,6 +61,7 @@ class Notebook:
         print(f'{last_edit_file}')
 
     def get_manifest(self):
+        '''Gets user-specified metadata about the notebook'''
         filepath = os.path.join(self.directory, '.notebook')
         if not os.path.isfile(filepath):
             return None
@@ -66,6 +70,7 @@ class Notebook:
 
 
 def pandoc(filename, extension):
+    '''Export specified file to a specifiable file format.'''
     # TODO manage pandoc errors, for example exit status 43 when citations include Snigowski et al. 2000
     options = ['pandoc', filename, '-o', filename + extension]
     # options += ['--ascii', '-s', '--toc'] # some extra options
@@ -76,6 +81,7 @@ def pandoc(filename, extension):
 
 
 def edit_file(editor, editor_args, filename):
+    '''Opens the file in an editor.'''
     os.system(f"{editor} {editor_args} {filename}")
 
 
