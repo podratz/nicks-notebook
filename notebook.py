@@ -39,11 +39,13 @@ class Notebook:
         path = os.path.join(self.directory, title)
         return Note(path)
 
-    def print_details(self) -> None:
+    def get_details(self) -> str:
         """Get computed metadata about the notebook."""
+        details = str()
+
         # Title and location
         if notebook_details := self.get_manifest() or "Notebook":
-            print(f"\033[1m{notebook_details}\033[0m ({self.directory})")
+            details += f"\033[1m{notebook_details}\033[0m ({self.directory})\n"
 
         # Creation date and page count
         creation_epoch = get_creation_time(self.directory)
@@ -54,15 +56,14 @@ class Notebook:
         )
         search_md_path = os.path.join(self.directory, "**/*.md")
         md_count = len(glob.glob(search_md_path))
-        print(
-            f"Created in {creation_date.year} "
-            f"({relative_months} months ago), {md_count} pages\n"
-        )
+        details += f"Created in {creation_date.year} "
+        details += f"({relative_months} months ago), {md_count} pages\n\n"
 
         # Recently edited
-        print("Recently edited:")
+        details += "Recently edited:\n"
         last_edit_file = latest_file_modification(self.directory, "**/*.md")
-        print(f"{last_edit_file}")
+        details += f"{last_edit_file}"
+        return details
 
     def get_manifest(self):
         """Gets user-specified metadata about the notebook"""
@@ -192,7 +193,8 @@ def main():
 
     if args.command is None:
         notebook = NotebookRegistry.get_current()
-        notebook.print_details()
+        details = notebook.get_details()
+        print(details)
 
     elif args.command == "list":
         print(list_notebooks())
