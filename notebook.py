@@ -39,12 +39,13 @@ class Notebook:
         path = os.path.join(self.directory, title)
         return Note(path)
 
-    def get_details(self) -> str:
+    @property
+    def details(self) -> str:
         """Get computed metadata about the notebook."""
         details = str()
 
         # Title and location
-        if notebook_details := self.get_manifest() or "Notebook":
+        if notebook_details := self.manifest or "Notebook":
             details += f"\033[1m{notebook_details}\033[0m ({self.directory})\n"
 
         # Creation date and page count
@@ -65,7 +66,8 @@ class Notebook:
         details += f"{last_edit_file}"
         return details
 
-    def get_manifest(self):
+    @property
+    def manifest(self) -> None | str:
         """Gets user-specified metadata about the notebook"""
         filepath = os.path.join(self.directory, ".notebook")
         if not os.path.isfile(filepath):
@@ -193,7 +195,7 @@ def main():
 
     if args.command is None:
         notebook = NotebookRegistry.get_current()
-        details = notebook.get_details()
+        details = notebook.details
         print(details)
 
     elif args.command == "list":
