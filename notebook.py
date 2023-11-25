@@ -29,6 +29,12 @@ class NotebookRegistry:
                 if not line.startswith(notebook.directory):
                     file.write(line)
 
+    @classmethod
+    def list(cls):
+        """Lists all available notebooks of the user"""
+        with open("/Users/nick/.notebooks") as f:
+            return f.read().strip("\n")
+
 
 class Notebook:
     def __init__(self, directory):
@@ -75,8 +81,8 @@ class Notebook:
         return Note(path)
 
 
-def edit_file(editor, editor_args, filename):
-    """Opens the file in an editor."""
+def edit(editor, editor_args, filename):
+    """Edits the file in an editor."""
     os.system(f"{editor} {editor_args} {filename}")
 
 
@@ -87,11 +93,6 @@ def fetch_directory(date_prefix):
 
 def fetch_editor():
     return os.getenv("EDITOR")
-
-
-def list_notebooks():
-    with open("/Users/nick/.notebooks") as f:
-        return f.read().strip("\n")
 
 
 def creation_time(path):
@@ -195,7 +196,7 @@ def main():
         print(details)
 
     elif args.command == "list":
-        print(list_notebooks())
+        print(NotebookRegistry.list())
 
     elif args.command == "set":
         raise NotImplementedError()
