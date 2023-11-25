@@ -1,8 +1,6 @@
 import argparse
 
-from .book import Book
-from .note import Note
-from .shelf import Shelf
+from notebook import Book, Note, Shelf
 
 
 def make_notebook_parser():
