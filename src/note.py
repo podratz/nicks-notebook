@@ -6,45 +6,16 @@ import sys
 import warnings
 from datetime import datetime, timedelta
 
+from .utils import (
+    UnsupportedEditorException,
+    construct_editor_params,
+    fetch_directory,
+    fetch_editor,
+)
+
 ENABLE_WEEKDAYS = False
 ENABLE_SUBDAY_DATES = False
 ENABLE_RELATIVE_DATES = True
-
-
-## MARK: Environment
-
-
-def fetch_editor():
-    try:
-        return os.environ["EDITOR"]
-    except KeyError as e:
-        print("Error: EDITOR environment variable needs to be defined", e)
-
-
-def fetch_directory(date_prefix):
-    var_name = "DAILY_NOTES" if date_prefix else "NOTES"
-    return os.getenv(var_name) or os.getenv("NOTES") or None
-
-
-##  MARK: Editor parameterization
-
-
-class UnsupportedEditorException(Exception):
-    def __init__(self, editor):
-        self.editor = editor
-        super().__init__(editor)
-
-
-def construct_editor_params(editor, prefill):
-    match editor:
-        case "vi" | "vim" | "nvim":
-            cmd = f':set filetype=markdown|set path+=**|:exe "$normal A{prefill}"'
-            return f"-c '{cmd}'"
-        case _:
-            raise UnsupportedEditorException(editor)
-
-
-## MARK: Note class
 
 
 class Note:
