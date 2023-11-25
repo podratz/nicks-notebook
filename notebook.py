@@ -43,6 +43,11 @@ class Notebook:
     def __repr__(self):
         return f"Notebook({self.directory!r})"
 
+    def latest_modification(self, pattern):
+        search_md_path = os.path.join(self.directory, pattern)
+        files = glob.glob(search_md_path)
+        return max(files, key=lambda file: os.stat(file).st_ctime)
+
     @property
     def manifest(self) -> None | str:
         """Gets user-specified metadata about the notebook"""
@@ -71,7 +76,7 @@ class Notebook:
         details += f"({months_back} months ago), {md_count} pages\n\n"
 
         details += "Recently edited:\n"
-        details += latest_modification(self.directory, "**/*.md")
+        details += self.latest_modification("**/*.md")
 
         return details
 
@@ -103,12 +108,6 @@ def creation_time(path):
         raise OSError(p.stderr.read().rstrip())
     else:
         return int(p.stdout.read())
-
-
-def latest_modification(notebook_path, pattern):
-    search_md_path = os.path.join(notebook_path, pattern)
-    files = glob.glob(search_md_path)
-    return max(files, key=lambda file: os.stat(file).st_ctime)
 
 
 # Until here, we have to refactor into the Notebook class
