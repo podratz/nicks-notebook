@@ -5,7 +5,7 @@ from .note import Note
 from .shelf import Shelf
 
 
-def make_notes_parser():
+def make_notebook_parser():
     prog = "notebook"
     description = "helps you manage your notebooks in markdown"
 
@@ -80,7 +80,7 @@ def make_notes_parser():
 
 
 def main():
-    parser = make_notes_parser()
+    parser = make_notebook_parser()
     args = parser.parse_args()
 
     if args.command is None:

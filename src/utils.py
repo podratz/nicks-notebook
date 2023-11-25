@@ -11,10 +11,10 @@ class UnsupportedEditorException(Exception):
         super().__init__(editor)
 
 
-def construct_editor_params(editor: str, prefill: str) -> str:
+def construct_editor_params(editor: str, prefill: str | None) -> str:
     match editor:
         case "vi" | "vim" | "nvim":
-            cmd = f':set filetype=markdown|set path+=**|:exe "$normal A{prefill}"'
+            cmd = f':set filetype=markdown|set path+=**|:exe "$normal A{prefill or ""}"'
             return f"-c '{cmd}'"
         case _:
             raise UnsupportedEditorException(editor)
