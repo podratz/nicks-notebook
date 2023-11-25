@@ -101,7 +101,9 @@ def make_parser():
     description = "helps you manage your notebooks in markdown"
 
     # initialization
-    parser = argparse.ArgumentParser(prog=prog, description=description)
+    parser = argparse.ArgumentParser(
+        prog=prog, description=description, epilog="by N. M. Podratz"
+    )
     # interpret remainder as note header
     # parser.add_argument('title', nargs=argparse.REMAINDER)
     # prepare notebook management subparsers

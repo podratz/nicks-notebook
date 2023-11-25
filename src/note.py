@@ -217,7 +217,9 @@ def make_wide_formatter(formatter, w=120, h=36):
 def make_parser():
     formatter = make_wide_formatter(argparse.ArgumentDefaultsHelpFormatter)
     parser = argparse.ArgumentParser(
-        formatter_class=formatter, description="take notes in markdown"
+        formatter_class=formatter,
+        description="take notes in markdown",
+        epilog="by N. M. Podratz",
     )
 
     # options
