@@ -79,7 +79,7 @@ def make_notebook_parser():
 # bind subparser
 
 
-def main():
+def parse():
     parser = make_notebook_parser()
     args = parser.parse_args()
 
