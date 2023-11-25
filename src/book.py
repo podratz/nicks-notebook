@@ -7,12 +7,14 @@ import os
 import subprocess
 
 from list_notes import open_notes, show_notes
-from note import Note
 
-from .notebook_registry import NotebookRegistry
+from .note import Note
+from .shelf import Shelf
 
 
-class Notebook:
+class Book:
+    """A book, the organizing unit of notes."""
+
     def __init__(self, directory):
         self.directory = directory
 
@@ -171,18 +173,18 @@ def main():
     args = parser.parse_args()
 
     if args.command is None:
-        notebook = NotebookRegistry.current
+        notebook = Shelf.current
         details = notebook.details
         print(details)
 
     elif args.command == "list":
-        print(NotebookRegistry.list())
+        print(Shelf.list())
 
     elif args.command == "set":
         raise NotImplementedError()
 
     elif args.command == "create":
-        Notebook(None)
+        Book(None)
 
     elif args.command == "open":
         show_notes(args.directory)
@@ -191,7 +193,7 @@ def main():
         open_notes(args.directory)
 
     if args.command == "note":
-        notebook = NotebookRegistry.current
+        notebook = Shelf.current
         note_title = " ".join(args.title)
         note = notebook.note(note_title)
         note.open()

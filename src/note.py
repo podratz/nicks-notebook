@@ -48,6 +48,8 @@ def construct_editor_params(editor, prefill):
 
 
 class Note:
+    """A note, holding a user's thought."""
+
     @classmethod
     def compose_path(cls, directory, filename_components, format="md"):
         if components := list(filter(None, filename_components)):
