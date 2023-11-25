@@ -34,10 +34,17 @@ class Notebook:
     def __init__(self, directory):
         self.directory = directory
 
-    def note(self, title) -> Note:
-        """Creates or amends a note."""
-        path = os.path.join(self.directory, title)
-        return Note(path)
+    def __repr__(self):
+        return f"Notebook({self.directory!r})"
+
+    @property
+    def manifest(self) -> None | str:
+        """Gets user-specified metadata about the notebook"""
+        filepath = os.path.join(self.directory, ".notebook")
+        if not os.path.isfile(filepath):
+            return None
+        with open(filepath) as f:
+            return f.read().strip("\n")
 
     @property
     def details(self) -> str:
@@ -62,17 +69,10 @@ class Notebook:
 
         return details
 
-    @property
-    def manifest(self) -> None | str:
-        """Gets user-specified metadata about the notebook"""
-        filepath = os.path.join(self.directory, ".notebook")
-        if not os.path.isfile(filepath):
-            return None
-        with open(filepath) as f:
-            return f.read().strip("\n")
-
-    def __repr__(self):
-        return f"Notebook({self.directory!r})"
+    def note(self, title) -> Note:
+        """Creates or amends a note."""
+        path = os.path.join(self.directory, title)
+        return Note(path)
 
 
 def edit_file(editor, editor_args, filename):
