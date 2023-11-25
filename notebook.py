@@ -42,28 +42,24 @@ class Notebook:
     @property
     def details(self) -> str:
         """Get computed metadata about the notebook."""
-        details = str()
+        details = ""
 
-        # Title and location
-        if notebook_details := self.manifest or "Notebook":
-            details += f"\033[1m{notebook_details}\033[0m ({self.directory})\n"
+        overview = self.manifest or "Notebook"
+        details += f"\033[1m{overview}\033[0m ({self.directory})\n"
 
-        # Creation date and page count
-        creation_epoch = get_creation_time(self.directory)
-        creation_date = datetime.datetime.fromtimestamp(creation_epoch)
+        epoch = creation_time(self.directory)
+        date = datetime.datetime.fromtimestamp(epoch)
+        details += f"Created in {date.year} "
+
         today = datetime.date.today()
-        relative_months = (today.year - creation_date.year) * 12 + (
-            today.month - creation_date.month
-        )
+        months_back = (today.year - date.year) * 12 + (today.month - date.month)
         search_md_path = os.path.join(self.directory, "**/*.md")
         md_count = len(glob.glob(search_md_path))
-        details += f"Created in {creation_date.year} "
-        details += f"({relative_months} months ago), {md_count} pages\n\n"
+        details += f"({months_back} months ago), {md_count} pages\n\n"
 
-        # Recently edited
         details += "Recently edited:\n"
-        last_edit_file = latest_file_modification(self.directory, "**/*.md")
-        details += f"{last_edit_file}"
+        details += latest_modification(self.directory, "**/*.md")
+
         return details
 
     @property
@@ -98,7 +94,7 @@ def list_notebooks():
         return f.read().strip("\n")
 
 
-def get_creation_time(path):
+def creation_time(path):
     p = subprocess.Popen(
         ["stat", "-f%B", path], stdout=subprocess.PIPE, stderr=subprocess.PIPE
     )
@@ -108,7 +104,7 @@ def get_creation_time(path):
         return int(p.stdout.read())
 
 
-def latest_file_modification(notebook_path, pattern):
+def latest_modification(notebook_path, pattern):
     search_md_path = os.path.join(notebook_path, pattern)
     files = glob.glob(search_md_path)
     return max(files, key=lambda file: os.stat(file).st_ctime)
