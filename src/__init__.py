@@ -1,11 +1,11 @@
 import argparse
 
-from book import *
-from note import *
-from shelf import *
+from .book import *
+from .note import *
+from .shelf import *
 
 
-def make_parser():
+def make_notes_parser():
     prog = "notebook"
     description = "helps you manage your notebooks in markdown"
 
@@ -80,7 +80,7 @@ def make_parser():
 
 
 def main():
-    parser = make_parser()
+    parser = make_notes_parser()
     args = parser.parse_args()
 
     if args.command is None:

@@ -4,9 +4,8 @@ import glob
 import os
 import subprocess
 
-from utils import fetch_editor, fetch_pager
-
 from .note import Note
+from .utils import fetch_editor, fetch_pager
 
 
 class Book:
