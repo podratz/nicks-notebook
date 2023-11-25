@@ -71,14 +71,14 @@ class Book:
         path = os.path.join(self.directory, title)
         return Note(path)
 
-    def open_notes(self):
+    def open(self):
         if base_dir := os.getenv("NOTEBOOK"):
             path = os.path.join(base_dir, self.directory)
             os.system(f"open -a Finder {path}")
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
 
-    def show_notes(self):
+    def show(self):
         if base_dir := os.getenv("notebook"):
             path = os.path.join(base_dir, self.directory)
             if os.path.isdir(path):
@@ -90,7 +90,7 @@ class Book:
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
 
-    def list_notes(self):
+    def list(self):
         if base_dir := os.getenv("NOTEBOOK"):
             path = os.path.join(base_dir, self.directory)
             with os.scandir(path) as it:

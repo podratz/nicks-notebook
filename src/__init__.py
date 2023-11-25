@@ -99,11 +99,11 @@ def main():
 
     elif args.command == "open":
         notebook = Book(args.directory)
-        notebook.show_notes()
+        notebook.show()
 
     elif args.command == "show":
         notebook = Book(args.directory)
-        notebook.open_notes()
+        notebook.open()
 
     if args.command == "note":
         notebook = Shelf.current
