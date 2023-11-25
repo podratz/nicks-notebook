@@ -75,6 +75,39 @@ class Book:
         path = os.path.join(self.directory, title)
         return Note(path)
 
+    def open_notes(self):
+        if base_dir := os.getenv("NOTEBOOK"):
+            path = os.path.join(base_dir, self.directory)
+            os.system(f"open -a Finder {path}")
+        else:
+            raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
+
+    def show_notes(self):
+        if base_dir := os.getenv("notebook"):
+            path = os.path.join(base_dir, self.directory)
+            if os.path.isdir(path):
+                editor = fetch_editor()
+                os.system(f"{editor} {path}")
+            else:
+                pager = utils.fetch_pager()
+                os.system(f"{pager} {path}")
+        else:
+            raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
+
+    def list_notes(self):
+        if base_dir := os.getenv("NOTEBOOK"):
+            path = os.path.join(base_dir, self.directory)
+            with os.scandir(path) as it:
+                entries = list(it)
+                entries.sort(key=lambda x: x.name)
+                for entry in entries:
+                    if entry.name.endswith(".md") and entry.is_file():
+                        # print(entry.name, entry.path)
+                        print(entry.name.strip(".md"), end="  ")
+                print("")
+        else:
+            raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
+
 
 # TODO: define on note
 def edit(editor, editor_args, filename):
