@@ -1,43 +1,42 @@
-import unittest
-import note
 import argparse
 import datetime
+import unittest
+
+from src import note
 
 
 def setup_date_args(yesterday=False, today=False, tomorrow=False):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--yesterday', default=yesterday)
-    parser.add_argument('--today', default=today)
-    parser.add_argument('--tomorrow', default=tomorrow)
+    parser.add_argument("--yesterday", default=yesterday)
+    parser.add_argument("--today", default=today)
+    parser.add_argument("--tomorrow", default=tomorrow)
     return parser.parse_args()
 
 
 class TestGenerateDateString(unittest.TestCase):
-
     def testWithSampleData(self):
-        date = datetime.datetime.strptime('24052010', "%d%m%Y").date()
-        format_str = 'YYYY-MM-DD'
+        date = datetime.datetime.strptime("24052010", "%d%m%Y").date()
+        format_str = "YYYY-MM-DD"
         dateString = note.generateDateString(format_str, date)
-        self.assertEqual(dateString, '2010-05-24')
+        self.assertEqual(dateString, "2010-05-24")
 
 
 class TestNoteCommand(unittest.TestCase):
-
     def testComposeFilenameWithName(self):
         name = "pythagoras"
         filename = note.compose_filename([name])
-        self.assertEqual(filename, 'pythagoras.md')
+        self.assertEqual(filename, "pythagoras.md")
 
     def testComposeFilenameWithDatePrefix(self):
-        date_prefix = '2023-05-22'
+        date_prefix = "2023-05-22"
         filename = note.compose_filename([date_prefix])
-        self.assertEqual(filename, '2023-05-22.md')
+        self.assertEqual(filename, "2023-05-22.md")
 
     def testComposeFilenameWithDatePrefixAndName(self):
-        date_prefix = '2023-05-22'
+        date_prefix = "2023-05-22"
         name = "todo"
         filename = note.compose_filename([date_prefix, name])
-        self.assertEqual(filename, '2023-05-22_todo.md')
+        self.assertEqual(filename, "2023-05-22_todo.md")
 
     def testComposeFilenameWithoutFilenameArguments(self):
         self.assertRaises(ValueError, note.compose_filename, [])
@@ -63,5 +62,5 @@ class TestNoteCommand(unittest.TestCase):
         self.assertEqual(date_offset, None)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
