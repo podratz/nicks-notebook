@@ -9,31 +9,7 @@ import subprocess
 from list_notes import open_notes, show_notes
 from note import Note
 
-
-class NotebookRegistry:
-    @classmethod
-    def get_current(cls):
-        """Gets the currently active notebook."""
-        with open("/Users/nick/.notebooks") as f:
-            directory = f.readline().rstrip("\n")
-        return Notebook(directory)
-
-    @classmethod
-    def set_current(cls, notebook):
-        """Sets the currently active notebook."""
-        with open("/Users/nick/.notebooks", "r") as file:
-            lines = file.readlines()
-        with open("/Users/nick/.notebooks", "w") as file:
-            file.write(notebook.directory)
-            for line in lines:
-                if not line.startswith(notebook.directory):
-                    file.write(line)
-
-    @classmethod
-    def list(cls):
-        """Lists all available notebooks of the user"""
-        with open("/Users/nick/.notebooks") as f:
-            return f.read().strip("\n")
+from .notebook_registry import NotebookRegistry
 
 
 class Notebook:
@@ -98,16 +74,19 @@ class Notebook:
         return Note(path)
 
 
+# TODO: define on note
 def edit(editor, editor_args, filename):
     """Edits the file in an editor."""
     os.system(f"{editor} {editor_args} {filename}")
 
 
+# TODO: define in utils
 def fetch_directory(date_prefix):
     slot = "DAILY" if date_prefix else "NOTEBOOK"
     return os.getenv(slot)
 
 
+# TODO: define in utils
 def fetch_editor():
     return os.getenv("EDITOR")
 
