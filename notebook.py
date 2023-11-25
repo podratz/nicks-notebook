@@ -43,6 +43,18 @@ class Notebook:
     def __repr__(self):
         return f"Notebook({self.directory!r})"
 
+    @property
+    def creation_time(self):
+        p = subprocess.Popen(
+            ["stat", "-f%B", self.directory],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        if p.wait():
+            raise OSError(p.stderr.read().rstrip())
+        else:
+            return int(p.stdout.read())
+
     def latest_modification(self, pattern):
         search_md_path = os.path.join(self.directory, pattern)
         files = glob.glob(search_md_path)
@@ -65,7 +77,7 @@ class Notebook:
         overview = self.manifest or "Notebook"
         details += f"\033[1m{overview}\033[0m ({self.directory})\n"
 
-        epoch = creation_time(self.directory)
+        epoch = self.creation_time
         date = datetime.datetime.fromtimestamp(epoch)
         details += f"Created in {date.year} "
 
@@ -98,16 +110,6 @@ def fetch_directory(date_prefix):
 
 def fetch_editor():
     return os.getenv("EDITOR")
-
-
-def creation_time(path):
-    p = subprocess.Popen(
-        ["stat", "-f%B", path], stdout=subprocess.PIPE, stderr=subprocess.PIPE
-    )
-    if p.wait():
-        raise OSError(p.stderr.read().rstrip())
-    else:
-        return int(p.stdout.read())
 
 
 # Until here, we have to refactor into the Notebook class
