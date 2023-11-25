@@ -6,8 +6,9 @@ import glob
 import os
 import subprocess
 
-from list_notes import open_notes, show_notes
+from utils import fetch_editor, fetch_pager
 
+from .book import Book
 from .note import Note
 from .shelf import Shelf
 
@@ -89,7 +90,7 @@ class Book:
                 editor = fetch_editor()
                 os.system(f"{editor} {path}")
             else:
-                pager = utils.fetch_pager()
+                pager = fetch_pager()
                 os.system(f"{pager} {path}")
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
@@ -107,26 +108,6 @@ class Book:
                 print("")
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
-
-
-# TODO: define on note
-def edit(editor, editor_args, filename):
-    """Edits the file in an editor."""
-    os.system(f"{editor} {editor_args} {filename}")
-
-
-# TODO: define in utils
-def fetch_directory(date_prefix):
-    slot = "DAILY" if date_prefix else "NOTEBOOK"
-    return os.getenv(slot)
-
-
-# TODO: define in utils
-def fetch_editor():
-    return os.getenv("EDITOR")
-
-
-# Until here, we have to refactor into the Notebook class
 
 
 def make_parser():
@@ -219,13 +200,15 @@ def main():
         raise NotImplementedError()
 
     elif args.command == "create":
-        Book(None)
+        pass
 
     elif args.command == "open":
-        show_notes(args.directory)
+        notebook = Book(args.directory)
+        notebook.show_notes()
 
     elif args.command == "show":
-        open_notes(args.directory)
+        notebook = Book(args.directory)
+        notebook.open_notes()
 
     if args.command == "note":
         notebook = Shelf.current

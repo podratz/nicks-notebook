@@ -5,6 +5,11 @@ from os import path
 from .book import Book
 
 
+def fetch_directory(date_prefix):
+    slot = "DAILY" if date_prefix else "NOTEBOOK"
+    return os.getenv(slot)
+
+
 def fetch_editor():
     return os.getenv("EDITOR")
 

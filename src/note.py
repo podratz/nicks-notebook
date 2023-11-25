@@ -86,6 +86,10 @@ class Note:
         print(options_string)  # for debugging
         return subprocess.check_call(options_string)
 
+    def edit(self, editor, editor_args):
+        """Edits the note in an editor."""
+        os.system(f"{editor} {editor_args} {self.filepath}")
+
 
 ## MARK: Argument parsing
 
