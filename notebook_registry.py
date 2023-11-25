@@ -2,15 +2,17 @@ from notebook import Notebook
 
 
 class NotebookRegistry:
+    @property
     @classmethod
-    def get_current(cls):
+    def current(cls):
         """Gets the currently active notebook."""
         with open("/Users/nick/.notebooks") as f:
             directory = f.readline().rstrip("\n")
         return Notebook(directory)
 
+    @current.setter
     @classmethod
-    def set_current(cls, notebook):
+    def current(cls, notebook):
         """Sets the currently active notebook."""
         with open("/Users/nick/.notebooks", "r") as file:
             lines = file.readlines()

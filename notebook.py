@@ -171,7 +171,7 @@ def main():
     args = parser.parse_args()
 
     if args.command is None:
-        notebook = NotebookRegistry.get_current()
+        notebook = NotebookRegistry.current_notebook
         details = notebook.details
         print(details)
 
@@ -191,7 +191,7 @@ def main():
         open_notes(args.directory)
 
     if args.command == "note":
-        notebook = NotebookRegistry.get_current()
+        notebook = NotebookRegistry.current_notebook
         note_title = " ".join(args.title)
         note = notebook.note(note_title)
         note.open()
