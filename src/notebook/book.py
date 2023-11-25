@@ -100,6 +100,6 @@ class Book:
                     if entry.name.endswith(".md") and entry.is_file():
                         # print(entry.name, entry.path)
                         print(entry.name.strip(".md"), end="  ")
-                print("")
+                print()
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
