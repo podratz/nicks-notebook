@@ -34,4 +34,3 @@ Currently, only the Vi family of editors are supported.
 Install the [unimpaired.vim](github.com/tpope/vim-unimpaired) plugin to easily
 navigate between notes in a named directory or in the .chrono directory using
 the ]f and [f shortcuts.
-cojsdeiwo
