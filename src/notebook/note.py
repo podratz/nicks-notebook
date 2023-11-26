@@ -19,10 +19,10 @@ ENABLE_RELATIVE_DATES = True
 
 
 class Note:
-    """A note, holding a user's thought."""
+    """A container for thoughts."""
 
-    @classmethod
-    def compose_path(cls, directory, filename_components, format="md"):
+    @staticmethod
+    def compose_path(directory, filename_components, format="md"):
         if components := list(filter(None, filename_components)):
             filename = f'{"_".join(components)}.{format}'
             return os.path.join(directory, filename)
@@ -34,18 +34,9 @@ class Note:
     def __init__(self, filepath: str):
         self.filepath = filepath
 
-    def open(self, editor=None, prefill=None):
-        try:
-            editor = editor or fetch_editor()
-        except KeyError:
-            editor = "vi"
-
-        try:
-            editor_params = construct_editor_params(editor, prefill)
-        except UnsupportedEditorException:
-            editor_params = ""
-
-        os.system(f"{editor} {editor_params} {self.filepath}")
+    def edit(self, editor, editor_args):
+        """Edits the note in an editor."""
+        os.system(f"{editor} {editor_args} {self.filepath}")
 
     def export(self, target_format):
         """Exports specified file to a specifiable file format."""
@@ -57,9 +48,17 @@ class Note:
         print(options_string)  # for debugging
         return subprocess.check_call(options_string)
 
-    def edit(self, editor, editor_args):
-        """Edits the note in an editor."""
-        os.system(f"{editor} {editor_args} {self.filepath}")
+    def open(self, editor=None, prefill=None):
+        try:
+            editor = editor or fetch_editor()
+        except KeyError:
+            editor = "vi"
+        try:
+            editor_params = construct_editor_params(editor, prefill)
+        except UnsupportedEditorException:
+            editor_params = ""
+
+        os.system(f"{editor} {editor_params} {self.filepath}")
 
 
 ## MARK: Argument parsing
