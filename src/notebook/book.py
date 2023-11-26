@@ -103,3 +103,6 @@ class Book:
                 print()
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
+
+    def export(self, target_format: str) -> None:
+        pass
