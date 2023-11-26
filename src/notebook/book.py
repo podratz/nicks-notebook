@@ -9,13 +9,18 @@ from .utils import fetch_editor, fetch_pager
 
 
 class Book:
-    """A book, the organizing unit of notes."""
+    """A container for notes."""
 
     def __init__(self, directory):
         self.directory = directory
 
     def __repr__(self):
         return f"Notebook({self.directory!r})"
+
+    def _latest_modification(self, pattern):
+        search_md_path = os.path.join(self.directory, pattern)
+        files = glob.glob(search_md_path)
+        return max(files, key=lambda file: os.stat(file).st_ctime)
 
     @property
     def creation_time(self):
@@ -28,11 +33,6 @@ class Book:
             raise OSError(p.stderr.read().rstrip())
         else:
             return int(p.stdout.read())
-
-    def latest_modification(self, pattern):
-        search_md_path = os.path.join(self.directory, pattern)
-        files = glob.glob(search_md_path)
-        return max(files, key=lambda file: os.stat(file).st_ctime)
 
     @property
     def manifest(self) -> None | str:
@@ -62,9 +62,26 @@ class Book:
         details += f"({months_back} months ago), {md_count} pages\n\n"
 
         details += "Recently edited:\n"
-        details += self.latest_modification("**/*.md")
+        details += self._latest_modification("**/*.md")
 
         return details
+
+    def export(self, target_format: str) -> None:
+        pass
+
+    def list(self):
+        if base_dir := os.getenv("NOTEBOOK"):
+            path = os.path.join(base_dir, self.directory)
+            with os.scandir(path) as it:
+                entries = list(it)
+                entries.sort(key=lambda x: x.name)
+                for entry in entries:
+                    if entry.name.endswith(".md") and entry.is_file():
+                        # print(entry.name, entry.path)
+                        print(entry.name.strip(".md"), end="  ")
+                print()
+        else:
+            raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
 
     def note(self, title) -> Note:
         """Creates or amends a note."""
@@ -89,20 +106,3 @@ class Book:
                 os.system(f"{pager} {path}")
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
-
-    def list(self):
-        if base_dir := os.getenv("NOTEBOOK"):
-            path = os.path.join(base_dir, self.directory)
-            with os.scandir(path) as it:
-                entries = list(it)
-                entries.sort(key=lambda x: x.name)
-                for entry in entries:
-                    if entry.name.endswith(".md") and entry.is_file():
-                        # print(entry.name, entry.path)
-                        print(entry.name.strip(".md"), end="  ")
-                print()
-        else:
-            raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
-
-    def export(self, target_format: str) -> None:
-        pass
