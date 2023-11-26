@@ -18,12 +18,26 @@ def make_parser():
         metavar="COMMAND",
     )
 
+    bind_book_parser = book_group.add_parser("bind", help="bind your notebook as PDF")
+    bind_book_parser.set_defaults(func=Note.export)
+    bind_book_parser.add_argument(
+        "directory", nargs="?", default="", help="select a subdirectory to bind"
+    )
+
     create_book_parser = book_group.add_parser("create", help="create a new notebook")
     create_book_parser.add_argument(
         "location",
         nargs="?",
         default="~/Notes",
         help="Provide a location for your new notebook",
+    )
+
+    list_books_parser = book_group.add_parser(
+        "list",
+        help="list your notebooks",
+    )
+    list_books_parser.add_argument(
+        "directory", nargs="?", default="", help="select a subdirectory to display"
     )
 
     open_book_parser = book_group.add_parser(
@@ -38,20 +52,6 @@ def make_parser():
     )
     show_book_parser.add_argument(
         "directory", nargs="?", default="", help="select a subdirectory to show"
-    )
-
-    list_books_parser = book_group.add_parser(
-        "list",
-        help="list your notebooks",
-    )
-    list_books_parser.add_argument(
-        "directory", nargs="?", default="", help="select a subdirectory to display"
-    )
-
-    bind_book_parser = book_group.add_parser("bind", help="bind your notebook as PDF")
-    bind_book_parser.set_defaults(func=Note.export)
-    bind_book_parser.add_argument(
-        "directory", nargs="?", default="", help="select a subdirectory to bind"
     )
 
     # note group
@@ -77,28 +77,28 @@ def parse():
         details = book.details
         print(details)
 
-    elif args.command == "list":
-        print(Shelf.list())
-
-    elif args.command == "set":
-        raise NotImplementedError()
+    elif args.command == "bind":
+        try:
+            book.export("pdf")
+        except Exception:
+            print("Export to pdf failed")
 
     elif args.command == "create":
         raise NotImplementedError()
 
-    elif args.command == "open":
-        book.show()
-
-    elif args.command == "show":
-        book.open()
+    elif args.command == "list":
+        print(Shelf.list())
 
     if args.command == "note":
         note_title = " ".join(args.title)
         note = book.note(note_title)
         note.open()
 
-    elif args.command == "bind":
-        try:
-            book.export("pdf")
-        except Exception:
-            print("Export to pdf failed")
+    elif args.command == "open":
+        book.show()
+
+    elif args.command == "set":
+        raise NotImplementedError()
+
+    elif args.command == "show":
+        book.open()
