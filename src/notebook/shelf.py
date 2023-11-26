@@ -2,20 +2,20 @@ from .book import Book
 
 
 class Shelf:
-    """A shelf storing the user's books."""
+    """A container for books."""
 
     @property
     @classmethod
-    def current(cls) -> Book:
-        """Gets the currently active notebook."""
+    def selected_book(cls) -> Book:
+        """The currently selected book."""
         with open("/Users/nick/.notebooks") as f:
             directory = f.readline().rstrip("\n")
         return Book(directory)
 
-    @current.setter
+    @selected_book.setter
     @classmethod
-    def current(cls, book: Book) -> None:
-        """Sets the currently active notebook."""
+    def selected_book(cls, book: Book) -> None:
+        """Select another book."""
         with open("/Users/nick/.notebooks", "r") as file:
             lines = file.readlines()
         with open("/Users/nick/.notebooks", "w") as file:
@@ -26,6 +26,6 @@ class Shelf:
 
     @classmethod
     def list(cls) -> str:
-        """Lists all available notebooks of the user"""
+        """List the available books."""
         with open("/Users/nick/.notebooks") as f:
             return f.read().strip("\n")
