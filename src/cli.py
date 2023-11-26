@@ -71,7 +71,7 @@ def parse():
     parser = make_parser()
     args = parser.parse_args()
 
-    book = Book(args.directory) or Shelf.current
+    book = Book(args.directory) or Shelf.selected_book
 
     if args.command is None:
         details = book.details
