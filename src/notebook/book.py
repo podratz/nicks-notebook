@@ -29,10 +29,12 @@ class Book:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
         )
-        if p.wait():
+        if p.wait() and p.stderr:
             raise OSError(p.stderr.read().rstrip())
-        else:
+        elif p.stdout:
             return int(p.stdout.read())
+        else:
+            raise SystemError("File handles not available")
 
     @property
     def manifest(self) -> None | str:
