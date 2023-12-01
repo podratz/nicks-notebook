@@ -38,7 +38,7 @@ class Book:
 
     @property
     def manifest(self) -> None | str:
-        """Gets user-specified metadata about the notebook"""
+        """User-specified metadata about the book"""
         filepath = os.path.join(self.directory, ".notebook")
         if not os.path.isfile(filepath):
             return None
@@ -47,7 +47,7 @@ class Book:
 
     @property
     def details(self) -> str:
-        """Get computed metadata about the notebook."""
+        """Computed metadata about the book."""
         details = ""
 
         overview = self.manifest or "Notebook"
@@ -58,7 +58,8 @@ class Book:
         details += f"Created in {date.year} "
 
         today = datetime.date.today()
-        months_back = (today.year - date.year) * 12 + (today.month - date.month)
+        full_year_months = (today.year - date.year) * 12
+        months_back = full_year_months + (today.month - date.month)
         search_md_path = os.path.join(self.directory, "**/*.md")
         md_count = len(glob.glob(search_md_path))
         details += f"({months_back} months ago), {md_count} pages\n\n"
@@ -69,7 +70,7 @@ class Book:
         return details
 
     def export(self, target_format: str) -> None:
-        pass
+        raise NotImplementedError("export function not yet implemented")
 
     def list(self):
         if base_dir := os.getenv("NOTEBOOK"):
