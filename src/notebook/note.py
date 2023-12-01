@@ -31,15 +31,17 @@ class Note:
                 "Insufficient argument list: components need to be provided"
             )
 
-    def __init__(self, filepath: str):
+    def __init__(self, filepath: str | None):
         self.filepath = filepath
 
     def edit(self, editor, editor_args):
         """Edits the note in an editor."""
-        os.system(f"{editor} {editor_args} {self.filepath}")
+        os.system(f"{editor} {editor_args} {self.filepath or ''}")
 
     def export(self, target_format):
         """Exports specified file to a specifiable file format."""
+        if self.filepath is None:
+            raise FileNotFoundError()
         # TODO manage pandoc errors, for example exit status 43 when citations include Snigowski et al. 2000
         options = ["pandoc", self.filepath, "-o", self.filepath + target_format]
         # options += ['--ascii', '-s', '--toc'] # some extra options
@@ -58,7 +60,7 @@ class Note:
         except UnsupportedEditorException:
             editor_params = ""
 
-        os.system(f"{editor} {editor_params} {self.filepath}")
+        os.system(f"{editor} {editor_params} {self.filepath or ''}")
 
 
 ## MARK: Argument parsing
@@ -230,7 +232,7 @@ def main():
     except KeyError:
         filepath = None
 
-    note = Note(filepath or "")
+    note = Note(filepath)
     # open note
     prefill = construct_md_prefill(args)
     note.open(prefill=prefill)
