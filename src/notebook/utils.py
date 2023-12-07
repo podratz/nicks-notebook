@@ -1,8 +1,4 @@
 import os
-import sys
-from os import path
-
-from .book import Book
 
 
 class UnsupportedEditorException(Exception):
@@ -39,11 +35,3 @@ def base_directory(date_prefix):
 
 def fetch_pager():
     return os.getenv("PAGER")
-
-
-## MARK: main
-
-if __name__ == "__main__":
-    path = sys.argv[1] if len(sys.argv) > 1 else ""
-    book = Book(path)
-    book.list()
