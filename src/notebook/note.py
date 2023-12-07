@@ -6,7 +6,7 @@ import sys
 import warnings
 from datetime import datetime, timedelta
 
-from .utils import (
+from utils import (
     UnsupportedEditorException,
     construct_editor_params,
     fetch_directory,
