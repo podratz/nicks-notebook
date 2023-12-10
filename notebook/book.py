@@ -99,7 +99,7 @@ class Book:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
 
     def show(self):
-        if base_dir := os.getenv("notebook"):
+        if base_dir := os.getenv("NOTEBOOK"):
             path = os.path.join(base_dir, self.directory)
             if os.path.isdir(path):
                 editor = fetch_editor()
