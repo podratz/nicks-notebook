@@ -94,18 +94,18 @@ class Book:
     def open(self):
         if base_dir := os.getenv("NOTEBOOK"):
             path = os.path.join(base_dir, self.directory)
-            os.system(f"open -a Finder {path}")
-        else:
-            raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
-
-    def show(self):
-        if base_dir := os.getenv("NOTEBOOK"):
-            path = os.path.join(base_dir, self.directory)
             if os.path.isdir(path):
                 editor = fetch_editor()
                 os.system(f"{editor} {path}")
             else:
                 pager = fetch_pager()
                 os.system(f"{pager} {path}")
+        else:
+            raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
+
+    def show(self):
+        if base_dir := os.getenv("NOTEBOOK"):
+            path = os.path.join(base_dir, self.directory)
+            os.system(f"open -a Finder {path}")
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")

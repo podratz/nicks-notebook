@@ -95,10 +95,10 @@ def parse():
         note.open()
 
     elif args.command == "open":
-        book.show()
+        book.open()
 
     elif args.command == "set":
         raise NotImplementedError()
 
     elif args.command == "show":
-        book.open()
+        book.show()
