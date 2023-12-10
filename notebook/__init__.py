@@ -1,4 +1,5 @@
-from .cli import parse
+from .book import Book
+from .note import Note
+from .shelf import Shelf
 
-if __name__ == "__main__":
-    parse()
+__all__ = ["Note", "Book", "Shelf"]
