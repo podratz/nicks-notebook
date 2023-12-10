@@ -67,7 +67,7 @@ def make_parser():
     return root_parser
 
 
-def parse():
+def main():
     parser = make_parser()
     args = parser.parse_args()
 
@@ -102,3 +102,7 @@ def parse():
 
     elif args.command == "show":
         book.show()
+
+
+if __name__ == "__main__":
+    main()
