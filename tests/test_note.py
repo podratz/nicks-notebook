@@ -2,7 +2,7 @@ import argparse
 import datetime
 import unittest
 
-from src import note
+from notebook import note
 
 
 def setup_date_args(yesterday=False, today=False, tomorrow=False):
@@ -17,14 +17,14 @@ class TestGenerateDateString(unittest.TestCase):
     def testWithSampleData(self):
         date = datetime.datetime.strptime("24052010", "%d%m%Y").date()
         format_str = "YYYY-MM-DD"
-        dateString = note.generateDateString(format_str, date)
+        dateString = note.construct_date_string(format_str, date)
         self.assertEqual(dateString, "2010-05-24")
 
 
 class TestNoteCommand(unittest.TestCase):
     def testComposeFilenameWithName(self):
         name = "pythagoras"
-        filename = note.compose_filename([name])
+        filename = note.construct_filepath([name])
         self.assertEqual(filename, "pythagoras.md")
 
     def testComposeFilenameWithDatePrefix(self):
