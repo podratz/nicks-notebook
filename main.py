@@ -67,8 +67,7 @@ def main():
     book = Book(args.directory) or Shelf.selected_book
 
     if args.command is None:
-        details = book.details
-        print(details)
+        print(book.details)
 
     elif args.command == "bind":
         try:
