@@ -114,7 +114,9 @@ def construct_filepath(args: argparse.Namespace) -> str:
 def construct_date_string(args: argparse.Namespace) -> str:
     date = datetime.now()
 
-    if date_offset := extract_date_offset(args):
+    if args.date:
+        date_str = args.date[0]
+        date_offset = extract_date_offset(date_str)
         date += timedelta(date_offset)
 
     try:
@@ -146,14 +148,13 @@ def extract_date_format_string(date: str) -> str:
 
 
 # prepare dated arguments
-def extract_date_offset(args: argparse.Namespace) -> int | None:
-    date = args.date[0] if args.date else None
+def extract_date_offset(date: str) -> int:
     if date == "yesterday":
         return -1
     elif date == "tomorrow":
         return +1
     else:
-        return None
+        return 0
 
 
 def prepare_date_choices() -> list[str]:
