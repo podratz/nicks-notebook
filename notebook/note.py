@@ -66,14 +66,11 @@ class Note:
 ## MARK: Argument parsing
 
 
-def construct_header(args: argparse.Namespace) -> str | None:
-    if not args.TITLE:
-        return None
-
+def construct_header(title: str) -> str:
     def format_heading(level: int, title: str) -> str:
         return ("#" * level) + " " + title.strip(" ")
 
-    title = " ".join(args.TITLE)
+    title = " ".join(title)
     headings = title.split("/")
     prefixed_headings = map(
         lambda pair: format_heading(pair[0], pair[1]), enumerate(headings, start=1)
@@ -92,7 +89,8 @@ def fetch_body(args: argparse.Namespace) -> str:
 def construct_md_prefill(args: argparse.Namespace) -> str:
     """Fills a markdown template from hierarchical arguments"""
     components = []
-    if header := construct_header(args):
+    if title := args.TITLE:
+        header = construct_header(title)
         components.append(header)
     if body := fetch_body(args):
         components.append(body)
