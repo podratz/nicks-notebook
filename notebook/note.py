@@ -98,7 +98,7 @@ def construct_md_prefill(args: argparse.Namespace) -> str:
 
 
 def construct_filepath(args: argparse.Namespace) -> str:
-    date_prefix = construct_date_string(args)
+    date_prefix = construct_date_string(args.date[0]) if args.date else ""
     name_appendix = args.name
     if date_prefix is None and name_appendix is None:
         raise KeyError("Either a date prefix or a name prefix must be provided")
@@ -109,16 +109,14 @@ def construct_filepath(args: argparse.Namespace) -> str:
     return Note.compose_path(directory, filename_components)
 
 
-def construct_date_string(args: argparse.Namespace) -> str:
+def construct_date_string(date_arg: str) -> str:
     date = datetime.now()
 
-    if args.date:
-        date_str = args.date[0]
-        date_offset = extract_date_offset(date_str)
-        date += timedelta(date_offset)
+    date_offset = extract_date_offset(date_arg)
+    date += timedelta(date_offset)
 
     try:
-        date_format_string = extract_date_format_string(args.date)
+        date_format_string = extract_date_format_string(date_arg)
         return date.strftime(date_format_string)
     except ValueError:
         raise
