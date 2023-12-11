@@ -1,8 +1,8 @@
+from enum import StrEnum, auto
+
 ENABLE_WEEKDAYS = False
 ENABLE_SUBDAY_DATES = False
 ENABLE_RELATIVE_DATES = True
-
-from enum import StrEnum, auto
 
 
 class Date(StrEnum):
