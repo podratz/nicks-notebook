@@ -10,7 +10,7 @@ from typing import Callable
 from .utils import (
     UnsupportedEditorException,
     construct_editor_params,
-    fetch_directory,
+    fetch_base_directory,
     fetch_editor,
 )
 
@@ -97,16 +97,17 @@ def construct_md_prefill(args: argparse.Namespace) -> str:
     return "\n\n".join(components)
 
 
-def construct_filepath(args: argparse.Namespace) -> str:
-    date_prefix = construct_date_string(args.date[0]) if args.date else ""
-    name_appendix = args.name
+def construct_filepath(date_prefix: str | None, name_appendix: str | None) -> str:
     if date_prefix is None and name_appendix is None:
         raise KeyError("Either a date prefix or a name prefix must be provided")
-    directory = fetch_directory(date_prefix)
-    if not directory:
-        raise EnvironmentError("Could not fetch base directory")
+    if date_prefix:
+        date_prefix = construct_date_string(date_prefix)
+    try:
+        base_directory = fetch_base_directory(date_prefix)
+    except:
+        raise
     filename_components = list(filter(None, [date_prefix, name_appendix]))
-    return Note.compose_path(directory, filename_components)
+    return Note.compose_path(base_directory, filename_components)
 
 
 def construct_date_string(date_arg: str) -> str:
@@ -228,8 +229,8 @@ def main() -> None:
 
     # create note
     try:
-        filepath = construct_filepath(args)
-    except KeyError:
+        filepath = construct_filepath(args.date, args.name)
+    except (KeyError, EnvironmentError):
         filepath = None
 
     note = Note(filepath)
