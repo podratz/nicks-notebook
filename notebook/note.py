@@ -119,12 +119,14 @@ def construct_date_string(args: argparse.Namespace) -> str | None:
     if date_offset := extract_date_offset(args):
         date += timedelta(date_offset)
 
-    if date_format_string := extract_date_format_string(args):
+    try:
+        date_format_string = extract_date_format_string(args.date)
         return date.strftime(date_format_string)
+    except ValueError:
+        raise
 
 
-def extract_date_format_string(args: argparse.Namespace) -> str | None:
-    date = args.date
+def extract_date_format_string(date: str) -> str:
     if date in ["second", "now"]:
         return "%Y-%m-%dT%H:%M:%S"
     if date == "minute":
@@ -142,7 +144,7 @@ def extract_date_format_string(args: argparse.Namespace) -> str | None:
     elif date == "year":
         return "%Y"
     else:
-        return None
+        raise ValueError("format of variable `date` is not valid")
 
 
 # prepare dated arguments
