@@ -99,19 +99,19 @@ def construct_md_prefill(args: argparse.Namespace) -> str:
     return "\n\n".join(components)
 
 
-def construct_filepath(args: argparse.Namespace) -> str | None:
+def construct_filepath(args: argparse.Namespace) -> str:
     date_prefix = construct_date_string(args)
     name_appendix = args.name
     if date_prefix is None and name_appendix is None:
         raise KeyError("Either a date prefix or a name prefix must be provided")
     directory = fetch_directory(date_prefix)
     if not directory:
-        return None
+        raise EnvironmentError("Could not fetch base directory")
     filename_components = list(filter(None, [date_prefix, name_appendix]))
     return Note.compose_path(directory, filename_components)
 
 
-def construct_date_string(args: argparse.Namespace) -> str | None:
+def construct_date_string(args: argparse.Namespace) -> str:
     date = datetime.now()
 
     if date_offset := extract_date_offset(args):
