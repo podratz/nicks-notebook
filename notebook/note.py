@@ -5,7 +5,7 @@ import subprocess
 import sys
 import warnings
 from datetime import datetime, timedelta
-from typing import Any
+from typing import Any, Callable
 
 from .utils import (
     UnsupportedEditorException,
@@ -181,7 +181,7 @@ def prepare_date_choices() -> list[str]:
     return [choice for choice in date_choices if choice not in unwanted]
 
 
-def make_wide_formatter(formatter: argparse._FormatterClass, w: int = 120, h: int = 36):
+def make_wide_formatter(formatter: Callable, w: int = 120, h: int = 36) -> Callable:
     """Return a wider HelpFormatter, if possible."""
     try:
         # https://stackoverflow.com/a/5464440
