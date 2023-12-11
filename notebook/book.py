@@ -11,19 +11,19 @@ from .utils import fetch_editor, fetch_pager
 class Book:
     """A container for notes."""
 
-    def __init__(self, directory):
+    def __init__(self, directory: str) -> None:
         self.directory = directory
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Notebook({self.directory!r})"
 
-    def _latest_modification(self, pattern):
+    def _latest_modification(self, pattern: str) -> str:
         search_md_path = os.path.join(self.directory, pattern)
         files = glob.glob(search_md_path)
         return max(files, key=lambda file: os.stat(file).st_ctime)
 
     @property
-    def creation_time(self):
+    def creation_time(self) -> int:
         p = subprocess.Popen(
             ["stat", "-f%B", self.directory],
             stdout=subprocess.PIPE,
@@ -86,12 +86,12 @@ class Book:
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
 
-    def note(self, title) -> Note:
+    def note(self, title: str) -> Note:
         """Creates or amends a note."""
         path = os.path.join(self.directory, title)
         return Note(path)
 
-    def open(self):
+    def open(self) -> None:
         if base_dir := os.getenv("NOTEBOOK"):
             path = os.path.join(base_dir, self.directory)
             if os.path.isdir(path):
@@ -103,7 +103,7 @@ class Book:
         else:
             raise EnvironmentError("Environment variable $NOTEBOOK is undefined.")
 
-    def show(self):
+    def show(self) -> None:
         if base_dir := os.getenv("NOTEBOOK"):
             path = os.path.join(base_dir, self.directory)
             os.system(f"open -a Finder {path}")
