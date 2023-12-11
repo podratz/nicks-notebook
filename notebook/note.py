@@ -5,7 +5,7 @@ import subprocess
 import sys
 import warnings
 from datetime import datetime, timedelta
-from typing import Any, Callable
+from typing import Callable
 
 from .utils import (
     UnsupportedEditorException,
@@ -23,16 +23,13 @@ class Note:
     """A container for thoughts."""
 
     @staticmethod
-    def compose_path(
-        directory: str, filename_components: list[str | None | Any], format: str = "md"
-    ):
-        if components := list(filter(None, filename_components)):
-            filename = f'{"_".join(components)}.{format}'
-            return os.path.join(directory, filename)
-        else:
+    def compose_path(directory: str, components: list[str], format: str = "md"):
+        if not components:
             raise ValueError(
                 "Insufficient argument list: components need to be provided"
             )
+        filename = f'{"_".join(components)}.{format}'
+        return os.path.join(directory, filename)
 
     def __init__(self, filepath: str | None):
         self.filepath = filepath
@@ -110,7 +107,8 @@ def construct_filepath(args: argparse.Namespace) -> str | None:
     directory = fetch_directory(date_prefix)
     if not directory:
         return None
-    return Note.compose_path(directory, [date_prefix, name_appendix])
+    filename_components = list(filter(None, [date_prefix, name_appendix]))
+    return Note.compose_path(directory, filename_components)
 
 
 def construct_date_string(args: argparse.Namespace) -> str | None:
