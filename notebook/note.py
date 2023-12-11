@@ -5,7 +5,7 @@ import subprocess
 import sys
 import warnings
 from datetime import datetime, timedelta
-from typing import Callable
+from typing import Callable, TextIO
 
 from .utils import (
     UnsupportedEditorException,
@@ -78,21 +78,21 @@ def construct_header(title: str) -> str:
     return "\n\n".join(prefixed_headings)
 
 
-def fetch_body(args: argparse.Namespace) -> str:
+def fetch_body(input: TextIO) -> str:
     """gets the body from std-in"""
-    if not os.isatty(args.input.fileno()):
-        return "".join(args.input.readlines())
+    if not os.isatty(input.fileno()):
+        return "".join(input.readlines())
     else:
         return ""
 
 
-def construct_md_prefill(args: argparse.Namespace) -> str:
+def construct_md_prefill(title: str | None, input: TextIO) -> str:
     """Fills a markdown template from hierarchical arguments"""
     components = []
-    if title := args.TITLE:
+    if title:
         header = construct_header(title)
         components.append(header)
-    if body := fetch_body(args):
+    if body := fetch_body(input):
         components.append(body)
     return "\n\n".join(components)
 
@@ -235,7 +235,7 @@ def main() -> None:
 
     note = Note(filepath)
     # open note
-    prefill = construct_md_prefill(args)
+    prefill = construct_md_prefill(args.TITLE, args.input)
     note.open(prefill=prefill)
 
 
