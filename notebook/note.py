@@ -5,6 +5,7 @@ import subprocess
 import sys
 import warnings
 from datetime import datetime, timedelta
+from enum import StrEnum, auto
 from typing import Callable, TextIO
 
 from .utils import (
@@ -97,86 +98,94 @@ def construct_md_prefill(title: str | None, input: TextIO) -> str:
     return "\n\n".join(components)
 
 
-def construct_filepath(date_prefix: str | None, name_appendix: str | None) -> str:
-    if date_prefix is None and name_appendix is None:
+def construct_filepath(date_choice: str | None, name_appendix: str | None) -> str:
+    if date_choice is None and name_appendix is None:
         raise KeyError("Either a date prefix or a name prefix must be provided")
-    if date_prefix:
-        date_prefix = construct_date_string(date_prefix)
+
+    date_string = construct_date_string(date_choice) if date_choice else None
+    is_dated_note = date_string is not None
     try:
-        base_directory = fetch_base_directory(date_prefix)
+        base_directory = fetch_base_directory(is_dated_note)
     except:
         raise
-    filename_components = list(filter(None, [date_prefix, name_appendix]))
+    filename_components = list(filter(None, [date_string, name_appendix]))
     return Note.compose_path(base_directory, filename_components)
 
 
-def construct_date_string(date_arg: str) -> str:
+def construct_date_string(date_choice: str) -> str:
     date = datetime.now()
 
-    date_offset = extract_date_offset(date_arg)
-    date += timedelta(date_offset)
+    offset = Date(date_choice).offset_in_days
+    date += timedelta(offset)
 
     try:
-        date_format_string = extract_date_format_string(date_arg)
+        date_format_string = Date(date_choice).format_string
         return date.strftime(date_format_string)
     except ValueError:
         raise
 
 
-def extract_date_format_string(date: str) -> str:
-    if date in ["second", "now"]:
-        return "%Y-%m-%dT%H:%M:%S"
-    if date == "minute":
-        return "%Y-%m-%dT%H:%M"
-    if date == "hour":
-        return "%Y-%m-%dT%H"
-    elif date in ["day", "yesterday", "today", "tomorrow"]:
-        return "%Y-%m-%d"
-    elif date == "week":
-        return "%Y-W%V"
-    elif date == "weekday":
-        return "%Y-W%V-%w"  # %V is iso, %U from sunday, %W from monday
-    elif date == "month":
-        return "%Y-%m"
-    elif date == "year":
-        return "%Y"
-    else:
-        raise ValueError("format of variable `date` is not valid")
+class Date(StrEnum):
+    now = auto()
+    second = auto()
+    minute = auto()
+    hour = auto()
+    day = auto()
+    weekday = auto()
+    week = auto()
+    month = auto()
+    year = auto()
+    yesterday = auto()
+    today = auto()
+    tomorrow = auto()
 
+    @property
+    def offset_in_days(self) -> int:
+        if self is Date.yesterday:
+            return -1
+        elif self is Date.tomorrow:
+            return +1
+        else:
+            return 0
 
-# prepare dated arguments
-def extract_date_offset(date: str) -> int:
-    if date == "yesterday":
-        return -1
-    elif date == "tomorrow":
-        return +1
-    else:
-        return 0
+    @property
+    def format_string(self) -> str:
+        if self in [Date.second, Date.now]:
+            return "%Y-%m-%dT%H:%M:%S"
+        if self is Date.minute:
+            return "%Y-%m-%dT%H:%M"
+        if self is Date.hour:
+            return "%Y-%m-%dT%H"
+        elif self in [
+            Date.day,
+            Date.week,
+            Date.yesterday,
+            Date.today,
+            Date.tomorrow,
+        ]:
+            return "%Y-%m-%d"
+        elif self is Date.week:
+            return "%Y-W%V"
+        elif self is Date.weekday:
+            return "%Y-W%V-%w"  # %V is iso, %U from sunday, %W from monday
+        elif self is Date.month:
+            return "%Y-%m"
+        elif self is Date.year:
+            return "%Y"
+        else:
+            raise ValueError("format of variable `date` is not valid")
 
-
-def prepare_date_choices() -> list[str]:
-    date_choices = [
-        "now",
-        "second",
-        "minute",
-        "hour",
-        "day",
-        "weekday",
-        "week",
-        "month",
-        "year",
-        "yesterday",
-        "today",
-        "tomorrow",
-    ]
-    unwanted = []
-    if not ENABLE_SUBDAY_DATES:
-        unwanted.extend(["second", "minute", "hour"])
-    if not ENABLE_WEEKDAYS:
-        unwanted.extend(["week", "weekday"])
-    if not ENABLE_RELATIVE_DATES:
-        unwanted.extend(["now", "yesterday", "today", "tomorrow"])
-    return [choice for choice in date_choices if choice not in unwanted]
+    @classmethod
+    def choices(cls) -> list[str]:
+        date_choices = [choice for choice in Date]
+        unwanted = []
+        if not ENABLE_SUBDAY_DATES:
+            unwanted.extend([Date.second, Date.minute, Date.hour])
+        if not ENABLE_WEEKDAYS:
+            unwanted.extend([Date.week, Date.weekday])
+        if not ENABLE_RELATIVE_DATES:
+            unwanted.extend([Date.now, Date.yesterday, Date.today, Date.tomorrow])
+        return [choice for choice in date_choices if choice not in unwanted]
 
 
 def make_wide_formatter(formatter: Callable, w: int = 120, h: int = 36) -> Callable:
@@ -204,7 +213,7 @@ def make_parser() -> argparse.ArgumentParser:
         "-d",
         "--date",
         metavar="DATE",
-        choices=prepare_date_choices(),
+        choices=Date.choices(),
         help="provide a date",
     )
     parser.add_argument("-n", "--name", help="provide a name")

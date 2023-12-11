@@ -23,8 +23,8 @@ def fetch_editor() -> str:
         raise KeyError("Error: EDITOR environment variable needs to be defined", e)
 
 
-def fetch_directory(date_prefix: str | None) -> str:
-    var_name = "DAILY_NOTES" if date_prefix else "NOTES"
+def fetch_base_directory(is_dated_note: bool) -> str:
+    var_name = "DAILY_NOTES" if is_dated_note else "NOTES"
     base = os.getenv(var_name) or os.getenv("NOTES")
     if not base:
         raise EnvironmentError("Could not fetch base directory")
