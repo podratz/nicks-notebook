@@ -187,7 +187,6 @@ def make_wide_formatter(formatter: argparse._FormatterClass, w: int = 120, h: in
         # https://stackoverflow.com/a/5464440
         # beware: "Only the name of this class is considered a public API."
         kwargs = {"width": w, "max_help_position": h}
-        formatter(None, **kwargs)
         return lambda prog: formatter(prog, **kwargs)
     except TypeError:
         warnings.warn("argparse help formatter failed, falling back.")
