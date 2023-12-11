@@ -2,7 +2,7 @@ import os
 
 
 class UnsupportedEditorException(Exception):
-    def __init__(self, editor):
+    def __init__(self, editor: str):
         self.editor = editor
         super().__init__(editor)
 
@@ -31,10 +31,10 @@ def fetch_base_directory(is_dated_note: bool) -> str:
     return base
 
 
-def base_directory(date_prefix):
+def base_directory(date_prefix: str) -> str | None:
     slot = "DAILY" if date_prefix else "NOTEBOOK"
     return os.getenv(slot)
 
 
-def fetch_pager():
+def fetch_pager() -> str | None:
     return os.getenv("PAGER")
