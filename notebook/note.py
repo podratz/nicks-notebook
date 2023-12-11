@@ -75,12 +75,11 @@ def construct_header(title: str) -> str:
     return "\n\n".join(prefixed_headings)
 
 
-def fetch_body(input: TextIO) -> str:
-    """gets the body from std-in"""
-    if not os.isatty(input.fileno()):
-        return "".join(input.readlines())
-    else:
+def read_contents(input: TextIO) -> str:
+    """Get the document's contents from stdin"""
+    if os.isatty(input.fileno()):
         return ""
+    return "".join(input.readlines())
 
 
 def construct_md_prefill(title: str | None, input: TextIO) -> str:
@@ -89,7 +88,7 @@ def construct_md_prefill(title: str | None, input: TextIO) -> str:
     if title:
         header = construct_header(title)
         components.append(header)
-    if body := fetch_body(input):
+    if body := read_contents(input):
         components.append(body)
     return "\n\n".join(components)
 
