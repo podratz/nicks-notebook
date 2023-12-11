@@ -5,6 +5,7 @@ import subprocess
 import sys
 import warnings
 from datetime import datetime, timedelta
+from typing import Any
 
 from .utils import (
     UnsupportedEditorException,
@@ -22,7 +23,9 @@ class Note:
     """A container for thoughts."""
 
     @staticmethod
-    def compose_path(directory, filename_components, format="md"):
+    def compose_path(
+        directory: str, filename_components: list[str | None | Any], format: str = "md"
+    ):
         if components := list(filter(None, filename_components)):
             filename = f'{"_".join(components)}.{format}'
             return os.path.join(directory, filename)
@@ -34,11 +37,11 @@ class Note:
     def __init__(self, filepath: str | None):
         self.filepath = filepath
 
-    def edit(self, editor, editor_args):
+    def edit(self, editor: str, editor_args: str):
         """Edits the note in an editor."""
         os.system(f"{editor} {editor_args} {self.filepath or ''}")
 
-    def export(self, target_format):
+    def export(self, target_format: str):
         """Exports specified file to a specifiable file format."""
         if self.filepath is None:
             raise FileNotFoundError()
@@ -50,7 +53,7 @@ class Note:
         print(options_string)  # for debugging
         return subprocess.check_call(options_string)
 
-    def open(self, editor=None, prefill=None):
+    def open(self, editor: str | None = None, prefill: str | None = None):
         try:
             editor = editor or fetch_editor()
         except KeyError:
@@ -66,11 +69,11 @@ class Note:
 ## MARK: Argument parsing
 
 
-def construct_header(args):
+def construct_header(args: argparse.Namespace):
     if not args.TITLE:
         return None
 
-    def format_heading(level, title):
+    def format_heading(level: int, title: str):
         return ("#" * level) + " " + title.strip(" ")
 
     title = " ".join(args.TITLE)
@@ -81,7 +84,7 @@ def construct_header(args):
     return "\n\n".join(prefixed_headings)
 
 
-def fetch_body(args):
+def fetch_body(args: argparse.Namespace) -> str:
     """gets the body from std-in"""
     if not os.isatty(args.input.fileno()):
         return "".join(args.input.readlines())
@@ -89,7 +92,7 @@ def fetch_body(args):
         return ""
 
 
-def construct_md_prefill(args):
+def construct_md_prefill(args: argparse.Namespace) -> str:
     """Fills a markdown template from hierarchical arguments"""
     components = []
     if header := construct_header(args):
@@ -99,17 +102,18 @@ def construct_md_prefill(args):
     return "\n\n".join(components)
 
 
-def construct_filepath(args):
+def construct_filepath(args: argparse.Namespace) -> str | None:
     date_prefix = construct_date_string(args)
     name_appendix = args.name
     if date_prefix is None and name_appendix is None:
         raise KeyError("Either a date prefix or a name prefix must be provided")
     directory = fetch_directory(date_prefix)
-    note_path = Note.compose_path(directory, [date_prefix, name_appendix])
-    return note_path
+    if not directory:
+        return None
+    return Note.compose_path(directory, [date_prefix, name_appendix])
 
 
-def construct_date_string(args):
+def construct_date_string(args: argparse.Namespace) -> str | None:
     date = datetime.now()
 
     if date_offset := extract_date_offset(args):
@@ -119,7 +123,7 @@ def construct_date_string(args):
         return date.strftime(date_format_string)
 
 
-def extract_date_format_string(args):
+def extract_date_format_string(args: argparse.Namespace) -> str | None:
     date = args.date
     if date in ["second", "now"]:
         return "%Y-%m-%dT%H:%M:%S"
@@ -142,7 +146,7 @@ def extract_date_format_string(args):
 
 
 # prepare dated arguments
-def extract_date_offset(args):
+def extract_date_offset(args: argparse.Namespace) -> int | None:
     date = args.date[0] if args.date else None
     if date == "yesterday":
         return -1
@@ -152,7 +156,7 @@ def extract_date_offset(args):
         return None
 
 
-def prepare_date_choices():
+def prepare_date_choices() -> list[str]:
     date_choices = [
         "now",
         "second",
@@ -177,7 +181,7 @@ def prepare_date_choices():
     return [choice for choice in date_choices if choice not in unwanted]
 
 
-def make_wide_formatter(formatter, w=120, h=36):
+def make_wide_formatter(formatter: argparse._FormatterClass, w: int = 120, h: int = 36):
     """Return a wider HelpFormatter, if possible."""
     try:
         # https://stackoverflow.com/a/5464440
@@ -190,7 +194,7 @@ def make_wide_formatter(formatter, w=120, h=36):
         return formatter
 
 
-def make_parser():
+def make_parser() -> argparse.ArgumentParser:
     formatter = make_wide_formatter(argparse.ArgumentDefaultsHelpFormatter)
     parser = argparse.ArgumentParser(
         formatter_class=formatter,
@@ -222,7 +226,7 @@ def make_parser():
     return parser
 
 
-def main():
+def main() -> None:
     parser = make_parser()
     args = parser.parse_args()
 
