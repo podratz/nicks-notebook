@@ -66,11 +66,11 @@ class Note:
 ## MARK: Argument parsing
 
 
-def construct_header(args: argparse.Namespace):
+def construct_header(args: argparse.Namespace) -> str | None:
     if not args.TITLE:
         return None
 
-    def format_heading(level: int, title: str):
+    def format_heading(level: int, title: str) -> str:
         return ("#" * level) + " " + title.strip(" ")
 
     title = " ".join(args.TITLE)
