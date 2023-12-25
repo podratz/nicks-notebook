@@ -2,6 +2,7 @@
 import argparse
 
 from notebook import Book, Note, Shelf
+from notebook.note import main as note_main
 
 
 def make_parser():
@@ -65,13 +66,13 @@ def main():
     parser = make_parser()
     args = parser.parse_args()
 
-    book = Book(args.directory) or Shelf.selected_book
-
     if args.command is None:
+        book = Shelf.selected_book()
         print(book.details)
 
     elif args.command == "bind":
         try:
+            book = Book(args.directory) or Shelf.selected_book()
             book.export("pdf")
         except Exception:
             print("Export to pdf failed")
@@ -83,17 +84,17 @@ def main():
         print(Shelf.list())
 
     if args.command == "note":
-        note_title = " ".join(args.title)
-        note = book.note(note_title)
-        note.open()
+        note_main()
 
     elif args.command == "open":
+        book = Book(args.directory) or Shelf.selected_book()
         book.open()
 
     elif args.command == "set":
         raise NotImplementedError()
 
     elif args.command == "show":
+        book = Book(args.directory) or Shelf.selected_book()
         book.show()
 
 
