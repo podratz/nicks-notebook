@@ -4,7 +4,6 @@ from .book import Book
 class Shelf:
     """A container for books."""
 
-    @property
     @classmethod
     def selected_book(cls) -> Book:
         """The currently selected book."""
@@ -12,9 +11,8 @@ class Shelf:
             directory = f.readline().rstrip("\n")
         return Book(directory)
 
-    @selected_book.setter
     @classmethod
-    def selected_book(cls, book: Book) -> None:
+    def set_selected_book(cls, book: Book) -> None:
         """Select another book."""
         with open("/Users/nick/.notebooks", "r") as file:
             lines = file.readlines()
