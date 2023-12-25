@@ -18,7 +18,7 @@ def construct_editor_params(editor: str, prefill: str | None) -> str:
 
 def fetch_editor() -> str:
     try:
-        return os.environ["EDITOR"]
+        return os.environ["VISUAL"]
     except KeyError as e:
         raise KeyError("Error: EDITOR environment variable needs to be defined", e)
 
