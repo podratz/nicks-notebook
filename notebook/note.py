@@ -7,13 +7,22 @@ import warnings
 from datetime import datetime, timedelta
 from typing import Callable, TextIO
 
-from .date import Date
-from .utils import (
-    UnsupportedEditorException,
-    construct_editor_params,
-    fetch_base_directory,
-    fetch_editor,
-)
+if __name__ == "__main__":
+    from date import Date
+    from utils import (
+        UnsupportedEditorException,
+        construct_editor_params,
+        fetch_base_directory,
+        fetch_editor,
+    )
+else:
+    from .date import Date
+    from .utils import (
+        UnsupportedEditorException,
+        construct_editor_params,
+        fetch_base_directory,
+        fetch_editor,
+    )
 
 
 class Note:
