@@ -13,10 +13,6 @@ class Note:
     def __init__(self, filepath: str | None):
         self.filepath = filepath
 
-    def edit(self, editor: str, editor_args: str):
-        """Edits the note in an editor."""
-        os.system(f"{editor} {editor_args} {self.filepath or ''}")
-
     def open(self, editor: str | None = None, prefill: str | None = None):
         try:
             editor = editor or fetch_editor()
