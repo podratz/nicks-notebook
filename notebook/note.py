@@ -10,21 +10,24 @@ else:
 class Note:
     """A container for thoughts."""
 
-    @staticmethod
-    def compose_path(directory: str, components: list[str], format: str = "md"):
-        if not components:
-            raise ValueError(
-                "Insufficient argument list: components need to be provided"
-            )
-        filename = f'{"_".join(components)}.{format}'
-        return os.path.join(directory, filename)
-
     def __init__(self, filepath: str | None):
         self.filepath = filepath
 
     def edit(self, editor: str, editor_args: str):
         """Edits the note in an editor."""
         os.system(f"{editor} {editor_args} {self.filepath or ''}")
+
+    def open(self, editor: str | None = None, prefill: str | None = None):
+        try:
+            editor = editor or fetch_editor()
+        except KeyError:
+            editor = "vi"
+        try:
+            editor_params = construct_editor_params(editor, prefill)
+        except UnsupportedEditorException:
+            editor_params = ""
+
+        os.system(f"{editor} {editor_params} {self.filepath or ''}")
 
     def export(self, target_format: str):
         """Exports specified file to a specifiable file format."""
@@ -38,14 +41,11 @@ class Note:
         print(options_string)  # for debugging
         return subprocess.check_call(options_string)
 
-    def open(self, editor: str | None = None, prefill: str | None = None):
-        try:
-            editor = editor or fetch_editor()
-        except KeyError:
-            editor = "vi"
-        try:
-            editor_params = construct_editor_params(editor, prefill)
-        except UnsupportedEditorException:
-            editor_params = ""
-
-        os.system(f"{editor} {editor_params} {self.filepath or ''}")
+    @staticmethod
+    def compose_path(directory: str, components: list[str], format: str = "md"):
+        if not components:
+            raise ValueError(
+                "Insufficient argument list: components need to be provided"
+            )
+        filename = f'{"_".join(components)}.{format}'
+        return os.path.join(directory, filename)
