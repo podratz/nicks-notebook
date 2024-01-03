@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 
-from notebook import Book, Note, Shelf
-from notebook.note import main as note_main
+from notebook import Book, Note, NoteCLI, Shelf
 
 
 def make_parser():
@@ -85,7 +84,8 @@ def main():
         print(shelf.list())
 
     if args.command == "note":
-        note_main()
+        cli = NoteCLI()
+        cli.main()
 
     elif args.command == "open":
         book = Book(args.directory) or shelf.selected_book
