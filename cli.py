@@ -65,14 +65,15 @@ def make_parser():
 def main():
     parser = make_parser()
     args = parser.parse_args()
+    shelf = Shelf.default()
 
     if args.command is None:
-        book = Shelf.selected_book()
+        book = shelf.selected_book
         print(book.details)
 
     elif args.command == "bind":
         try:
-            book = Book(args.directory) or Shelf.selected_book()
+            book = Book(args.directory) or shelf.selected_book
             book.export("pdf")
         except Exception:
             print("Export to pdf failed")
@@ -81,20 +82,20 @@ def main():
         raise NotImplementedError()
 
     elif args.command == "list":
-        print(Shelf.list())
+        print(shelf.list())
 
     if args.command == "note":
         note_main()
 
     elif args.command == "open":
-        book = Book(args.directory) or Shelf.selected_book()
+        book = Book(args.directory) or shelf.selected_book
         book.open()
 
     elif args.command == "set":
         raise NotImplementedError()
 
     elif args.command == "show":
-        book = Book(args.directory) or Shelf.selected_book()
+        book = Book(args.directory) or shelf.selected_book
         book.show()
 
 
